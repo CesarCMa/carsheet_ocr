@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 app = FastAPI(
     title="Carsheet OCR API",
@@ -22,4 +23,20 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"} 
+    return {"status": "healthy"}
+
+@app.post("/detect")
+async def detect_image(file: UploadFile = File(...)):
+    # For now, return a dummy response
+    return JSONResponse(
+        content={
+            "status": "success",
+            "message": "Image received successfully",
+            "prediction": {
+                "make": "Toyota",
+                "model": "Camry",
+                "year": 2020,
+                "confidence": 0.95
+            }
+        }
+    ) 
