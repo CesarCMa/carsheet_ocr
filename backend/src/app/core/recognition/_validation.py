@@ -5,8 +5,6 @@ import torch.utils.data
 import torch.nn.functional as F
 from torchmetrics.functional.text import edit_distance
 
-from simple_ocr.recognition._ctc_label_converter import CTCLabelConverter
-from simple_ocr.recognition._vgg_model import VGG_Model
 
 def validation(model, criterion, evaluation_loader, converter, opt, device):
     """ validation or evaluation """

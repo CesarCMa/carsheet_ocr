@@ -11,9 +11,9 @@ import numpy as np
 
 from loguru import logger
 
-from simple_ocr.recognition._ctc_label_converter import CTCLabelConverter
+from ._ctc_label_converter import CTCLabelConverter
 from ._train_dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
-from simple_ocr.recognition._vgg_model import VGG_Model
+from ._vgg_model import VGG_Model
 from ._validation import validation
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

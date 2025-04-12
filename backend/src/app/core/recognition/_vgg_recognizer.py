@@ -9,8 +9,8 @@ import torchvision.transforms as transforms
 
 from loguru import logger
 
-from simple_ocr import CONFIG_PATH, MODELS_PATH
-from simple_ocr.utils import file
+from src.app import CONFIG_PATH, MODELS_PATH
+from src.app.core.utils import file
 from ._vgg_model import VGGModel
 from ._ctc_label_converter import CTCLabelConverter
 

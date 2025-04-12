@@ -7,8 +7,8 @@ import torch
 import torchvision
 from packaging import version
 
-from simple_ocr import CONFIG_PATH, MODELS_PATH
-from simple_ocr.utils import file, image_processing
+from src.app import CONFIG_PATH, MODELS_PATH
+from src.app.core.utils import file, image_processing
 
 from ._detection_utils import detect_bounding_boxes
 from ._utils import init_weights

@@ -36,3 +36,4 @@ ENV/
 # Project specific
 uploads/
 *.log 
+models/*

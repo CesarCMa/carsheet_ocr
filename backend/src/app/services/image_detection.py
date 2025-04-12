@@ -2,11 +2,11 @@
 import cv2
 import numpy as np
 from typing import List, Any
-from src.app.models.detection import CraftDetector, BoxMerger
-from src.app.models.recognition import VGGRecognizer
+from src.app.core.detection import CraftDetector, BoxMerger
+from src.app.core.recognition import VGGRecognizer
 
 
-def detect_imaGe(image: np.ndarray) -> List[Any]:
+def detect_image(image: np.ndarray) -> List[Any]:
     """Detect text in an image."""
     batch_img = np.expand_dims(image, axis=0)
     gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
