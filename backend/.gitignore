@@ -37,3 +37,4 @@ ENV/
 uploads/
 *.log 
 models/*
+model_train/data/*

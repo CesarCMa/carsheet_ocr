@@ -100,12 +100,6 @@ class _BidirectionalLSTM(nn.Module):
         input : visual feature [batch_size x T x input_size]
         output : contextual feature [batch_size x T x output_size]
         """
-        try:  # multi gpu needs this
-            self.rnn.flatten_parameters()
-
-        # TODO: Review this shadow exception
-        except:  # quantization doesn't work with this
-            pass
         recurrent, _ = self.rnn(
             input
         )  # batch_size x T x input_size -> batch_size x T x (2*hidden_size)
