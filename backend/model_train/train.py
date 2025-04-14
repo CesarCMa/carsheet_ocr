@@ -61,7 +61,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         contrast_adjust=train_settings["contrast_adjust"],
     )
     valid_dataset, valid_dataset_log = hierarchical_dataset(
-        root=train_settings["valid_data"], opt=train_settings
+        root=train_settings["valid_data"], training_settings=train_settings
     )
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset,
@@ -93,7 +93,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         f'model input parameters {train_settings["image_height"]} {train_settings["image_width"]} {train_settings["network_params"]["input_channel"]} {train_settings["network_params"]["output_channel"]} {train_settings["network_params"]["hidden_size"]} {num_class} {train_settings["batch_max_length"]} {train_settings["transformation"]} {train_settings["feature_extraction"]} {train_settings["sequence_modeling"]}'
     )
 
-    if train_settings["train_settings"]:
+    if train_settings["saved_model"]:
         pretrained_dict = torch.load(train_settings["saved_model"])
         if train_settings["new_prediction"]:
             model.Prediction = nn.Linear(

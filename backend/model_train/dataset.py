@@ -34,11 +34,8 @@ class Batch_Balanced_Dataset(object):
 
     def __init__(self, training_settings):
         """
-        Modulate the data ratio in the batch.
-        For example, when select_data is "MJ-ST" and batch_ratio is "0.5-0.5",
-        the 50% of the batch is filled with MJ and the other 50% of the batch is filled with ST.
+        Creates a dataset loader for a single dataset.
         """
-
         log_path = f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt"
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         log = open(log_path, "a")
@@ -46,13 +43,8 @@ class Batch_Balanced_Dataset(object):
         dashed_line = "-" * 80
         logger.info(dashed_line)
         log.write(dashed_line + "\n")
-        logger.info(
-            f"dataset_root: {training_settings['train_data']}\ntraining_settings['select_data']: {training_settings['select_data']}\ntraining_settings['batch_ratio']: {training_settings['batch_ratio']}"
-        )
-        log.write(
-            f"dataset_root: {training_settings['train_data']}\ntraining_settings['select_data']: {training_settings['select_data']}\ntraining_settings['batch_ratio']: {training_settings['batch_ratio']}\n"
-        )
-        assert len(training_settings['select_data']) == len(training_settings['batch_ratio'])
+        logger.info(f"dataset_root: {training_settings['train_data']}")
+        log.write(f"dataset_root: {training_settings['train_data']}\n")
 
         _AlignCollate = AlignCollate(
             imgH=training_settings['image_height'],
@@ -60,80 +52,55 @@ class Batch_Balanced_Dataset(object):
             keep_ratio_with_pad=training_settings['pad'],
             contrast_adjust=training_settings['contrast_adjust'],
         )
-        self.data_loader_list = []
-        self.dataloader_iter_list = []
-        batch_size_list = []
-        Total_batch_size = 0
-        for selected_d, batch_ratio_d in zip(training_settings['select_data'], training_settings['batch_ratio']):
-            _batch_size = max(round(training_settings['batch_size'] * float(batch_ratio_d)), 1)
-            logger.info(dashed_line)
-            log.write(dashed_line + "\n")
-            _dataset, _dataset_log = hierarchical_dataset(
-                root=training_settings['train_data'], training_settings=training_settings, select_data=[selected_d]
-            )
-            total_number_dataset = len(_dataset)
-            log.write(_dataset_log)
 
-            """
-            The total number of data can be modified with training_settings['total_data_usage_ratio'].
-            ex) training_settings['total_data_usage_ratio'] = 1 indicates 100% usage, and 0.2 indicates 20% usage.
-            See 4.2 section in our paper.
-            """
-            number_dataset = int(total_number_dataset * float(training_settings['total_data_usage_ratio']))
-            dataset_split = [number_dataset, total_number_dataset - number_dataset]
-            indices = range(total_number_dataset)
-            _dataset, _ = [
-                Subset(_dataset, indices[offset - length : offset])
-                for offset, length in zip(accumulate(dataset_split), dataset_split)
-            ]
-            selected_d_log = f"num total samples of {selected_d}: {total_number_dataset} x {training_settings['total_data_usage_ratio']} (total_data_usage_ratio) = {len(_dataset)}\n"
-            selected_d_log += f"num samples of {selected_d} per batch: {training_settings['batch_size']} x {float(batch_ratio_d)} (batch_ratio) = {_batch_size}"
-            logger.info(selected_d_log)
-            log.write(selected_d_log + "\n")
-            batch_size_list.append(str(_batch_size))
-            Total_batch_size += _batch_size
+        # Create dataset for the single directory
+        _dataset, _dataset_log = hierarchical_dataset(
+            root=training_settings['train_data'], 
+            training_settings=training_settings, 
+            select_data=['/']
+        )
+        total_number_dataset = len(_dataset)
+        log.write(_dataset_log)
 
-            _data_loader = torch.utils.data.DataLoader(
-                _dataset,
-                batch_size=_batch_size,
-                shuffle=True,
-                num_workers=int(training_settings['workers']),  # prefetch_factor=2,persistent_workers=True,
-                collate_fn=_AlignCollate,
-                pin_memory=True,
-            )
-            self.data_loader_list.append(_data_loader)
-            self.dataloader_iter_list.append(iter(_data_loader))
+        # Apply data usage ratio if specified
+        number_dataset = int(total_number_dataset * float(training_settings['total_data_usage_ratio']))
+        dataset_split = [number_dataset, total_number_dataset - number_dataset]
+        indices = range(total_number_dataset)
+        _dataset, _ = [
+            Subset(_dataset, indices[offset - length : offset])
+            for offset, length in zip(accumulate(dataset_split), dataset_split)
+        ]
 
-        Total_batch_size_log = f"{dashed_line}\n"
-        batch_size_sum = "+".join(batch_size_list)
-        Total_batch_size_log += f"Total_batch_size: {batch_size_sum} = {Total_batch_size}\n"
-        Total_batch_size_log += f"{dashed_line}"
-        training_settings['batch_size'] = Total_batch_size
+        # Create data loader
+        _data_loader = torch.utils.data.DataLoader(
+            _dataset,
+            batch_size=training_settings['batch_size'],
+            shuffle=True,
+            num_workers=int(training_settings['workers']),
+            collate_fn=_AlignCollate,
+            pin_memory=True,
+        )
 
-        logger.info(Total_batch_size_log)
-        log.write(Total_batch_size_log + "\n")
+        self.data_loader = _data_loader
+        self.dataloader_iter = iter(_data_loader)
+
+        # Log dataset information
+        dataset_log = f"num total samples: {total_number_dataset} x {training_settings['total_data_usage_ratio']} (total_data_usage_ratio) = {len(_dataset)}\n"
+        dataset_log += f"num samples per batch: {training_settings['batch_size']}"
+        logger.info(dataset_log)
+        log.write(dataset_log + "\n")
         log.close()
 
     def get_batch(self):
-        balanced_batch_images = []
-        balanced_batch_texts = []
+        try:
+            image, text = self.dataloader_iter.next()
+        except StopIteration:
+            self.dataloader_iter = iter(self.data_loader)
+            image, text = self.dataloader_iter.next()
+        except ValueError:
+            return None, None
 
-        for i, data_loader_iter in enumerate(self.dataloader_iter_list):
-            try:
-                image, text = data_loader_iter.next()
-                balanced_batch_images.append(image)
-                balanced_batch_texts += text
-            except StopIteration:
-                self.dataloader_iter_list[i] = iter(self.data_loader_list[i])
-                image, text = self.dataloader_iter_list[i].next()
-                balanced_batch_images.append(image)
-                balanced_batch_texts += text
-            except ValueError:
-                pass
-
-        balanced_batch_images = torch.cat(balanced_batch_images, 0)
-
-        return balanced_batch_images, balanced_batch_texts
+        return image, text
 
 
 def hierarchical_dataset(root, training_settings, select_data="/"):
