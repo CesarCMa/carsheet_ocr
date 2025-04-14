@@ -44,10 +44,10 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     """dataset preparation"""
     if not train_settings["data_filtering_off"]:
         logger.info(
-            "Filtering the images containing characters which are not in train_settings.character"
+            "Filtering the images containing characters which are not in train_settings['character']"
         )
         logger.info(
-            "Filtering the images whose label is longer than train_settings.batch_max_length"
+            "Filtering the images whose label is longer than train_settings['batch_max_length']"
         )
 
     train_dataset = Batch_Balanced_Dataset(train_settings)
@@ -95,19 +95,19 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     )
 
     if train_settings["train_settings"]:
-        pretrained_dict = torch.load(train_settings.saved_model)
-        if train_settings.new_prediction:
+        pretrained_dict = torch.load(train_settings["saved_model"])
+        if train_settings["new_prediction"]:
             model.Prediction = nn.Linear(
                 model.SequenceModeling_output, len(pretrained_dict["module.Prediction.weight"])
             )
 
         model = torch.nn.DataParallel(model).to(device)
-        logger.info(f"loading pretrained model from {train_settings.saved_model}")
-        if train_settings.finetune:
+        logger.info(f"loading pretrained model from {train_settings['saved_model']}")
+        if train_settings["finetune"]:
             model.load_state_dict(pretrained_dict, strict=False)
         else:
             model.load_state_dict(pretrained_dict)
-        if train_settings.new_prediction:
+        if train_settings["new_prediction"]:
             model.module.Prediction = nn.Linear(model.module.SequenceModeling_output, num_class)
             for name, param in model.module.Prediction.named_parameters():
                 if "bias" in name:
@@ -144,10 +144,10 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
     # freeze some layers
     try:
-        if train_settings.freeze_feature_extraction:
+        if train_settings["freeze_feature_extraction"]:
             for param in model.module.FeatureExtraction.parameters():
                 param.requires_grad = False
-        if train_settings.freeze_sequence_modeling:
+        if train_settings["freeze_sequence_modeling"]:
             for param in model.module.SequenceModeling.parameters():
                 param.requires_grad = False
     except:
@@ -163,22 +163,22 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     # [print(name, p.numel()) for name, p in filter(lambda p: p[1].requires_grad, model.named_parameters())]
 
     # setup optimizer
-    if train_settings.optim == "adam":
-        # optimizer = optim.Adam(filtered_parameters, lr=train_settings.lr, betas=(train_settings.beta1, 0.999))
+    if train_settings["optim"] == "adam":
+        # optimizer = optim.Adam(filtered_parameters, lr=train_settings["lr"], betas=(train_settings["beta1"], 0.999))
         optimizer = optim.Adam(filtered_parameters)
     else:
         optimizer = optim.Adadelta(
             filtered_parameters,
-            lr=train_settings.lr,
-            rho=train_settings.rho,
-            eps=train_settings.eps,
+            lr=train_settings["lr"],
+            rho=train_settings["rho"],
+            eps=train_settings["eps"],
         )
     logger.info("Optimizer:")
     logger.info(optimizer)
 
     """ final options """
     with open(
-        f"./saved_models/{train_settings.experiment_name}/opt.txt", "a", encoding="utf8"
+        f"./saved_models/{train_settings['experiment_name']}/opt.txt", "a", encoding="utf8"
     ) as opt_file:
         opt_log = "------------ Options -------------\n"
         args = vars(train_settings)
@@ -190,9 +190,9 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
     """ start training """
     start_iter = 0
-    if train_settings.saved_model:
+    if train_settings["saved_model"]:
         try:
-            start_iter = int(train_settings.saved_model.split("_")[-1].split(".")[0])
+            start_iter = int(train_settings["saved_model"].split("_")[-1].split(".")[0])
             logger.info(f"continue to train, start_iter: {start_iter}")
         except:
             pass
@@ -225,7 +225,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
             scaler.scale(cost).backward()
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings.grad_clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings["grad_clip"])
             scaler.step(optimizer)
             scaler.update()
         else:
@@ -242,18 +242,18 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
             torch.backends.cudnn.enabled = True
 
             cost.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings.grad_clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings["grad_clip"])
             optimizer.step()
         loss_avg.add(cost)
 
         # validation part
-        if (i % train_settings.val_interval == 0) and (i != 0):
+        if (i % train_settings["val_interval"] == 0) and (i != 0):
             logger.info(f"training time: {time.time()-t1}")
             t1 = time.time()
             elapsed_time = time.time() - start_time
             # for log
             with open(
-                f"./saved_models/{train_settings.experiment_name}/log_train.txt",
+                f"./saved_models/{train_settings['experiment_name']}/log_train.txt",
                 "a",
                 encoding="utf8",
             ) as log:
@@ -274,7 +274,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 model.train()
 
                 # training loss and validation loss
-                loss_log = f"[{i}/{train_settings.num_iter}] Train loss: {loss_avg.val():0.5f}, Valid loss: {valid_loss:0.5f}, Elapsed_time: {elapsed_time:0.5f}"
+                loss_log = f"[{i}/{train_settings['num_iter']}] Train loss: {loss_avg.val():0.5f}, Valid loss: {valid_loss:0.5f}, Elapsed_time: {elapsed_time:0.5f}"
                 loss_avg.reset()
 
                 current_model_log = f'{"Current_accuracy":17s}: {current_accuracy:0.3f}, {"Current_norm_ED":17s}: {current_norm_ED:0.4f}'
@@ -284,13 +284,13 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                     best_accuracy = current_accuracy
                     torch.save(
                         model.state_dict(),
-                        f"./saved_models/{train_settings.experiment_name}/best_accuracy.pth",
+                        f"./saved_models/{train_settings['experiment_name']}/best_accuracy.pth",
                     )
                 if current_norm_ED > best_norm_ED:
                     best_norm_ED = current_norm_ED
                     torch.save(
                         model.state_dict(),
-                        f"./saved_models/{train_settings.experiment_name}/best_norm_ED.pth",
+                        f"./saved_models/{train_settings['experiment_name']}/best_norm_ED.pth",
                     )
                 best_model_log = f'{"Best_accuracy":17s}: {best_accuracy:0.3f}, {"Best_norm_ED":17s}: {best_norm_ED:0.4f}'
 
@@ -320,14 +320,12 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 log.write(predicted_result_log + "\n")
                 logger.info(f"validation time: {time.time()-t1}")
                 t1 = time.time()
-        # save model per 1e+4 iter.
-        if (i + 1) % 1e4 == 0:
             torch.save(
                 model.state_dict(),
-                f"./saved_models/{train_settings.experiment_name}/iter_{i+1}.pth",
+                f"./saved_models/{train_settings['experiment_name']}/iter_{i+1}.pth",
             )
 
-        if i == train_settings.num_iter:
+        if i == train_settings["num_iter"]:
             logger.info("end the training")
             sys.exit()
         i += 1
