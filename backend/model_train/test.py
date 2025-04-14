@@ -7,7 +7,7 @@ from nltk.metrics.distance import edit_distance
 
 from utils import Averager
 
-def validation(model, criterion, evaluation_loader, converter, opt, device):
+def validation(model, criterion, evaluation_loader, converter, train_settings, device):
     """ validation or evaluation """
     n_correct = 0
     norm_ED = 0
@@ -20,41 +20,29 @@ def validation(model, criterion, evaluation_loader, converter, opt, device):
         length_of_data = length_of_data + batch_size
         image = image_tensors.to(device)
         # For max length prediction
-        length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
-        text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
+        length_for_pred = torch.IntTensor([train_settings['batch_max_length']] * batch_size).to(device)
+        text_for_pred = torch.LongTensor(batch_size, train_settings['batch_max_length'] + 1).fill_(0).to(device)
 
-        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=train_settings['batch_max_length'])
         
         start_time = time.time()
-        if 'CTC' in opt.Prediction:
-            preds = model(image, text_for_pred)
-            forward_time = time.time() - start_time
 
-            # Calculate evaluation loss for CTC decoder.
-            preds_size = torch.IntTensor([preds.size(1)] * batch_size)
-            # permute 'preds' to use CTCloss format
-            cost = criterion(preds.log_softmax(2).permute(1, 0, 2), text_for_loss, preds_size, length_for_loss)
+        preds = model(image)
+        forward_time = time.time() - start_time
 
-            if opt.decode == 'greedy':
-                # Select max probabilty (greedy decoding) then decode index to character
-                _, preds_index = preds.max(2)
-                preds_index = preds_index.view(-1)
-                preds_str = converter.decode_greedy(preds_index.data, preds_size.data)
-            elif opt.decode == 'beamsearch':
-                preds_str = converter.decode_beamsearch(preds, beamWidth=2)
+        # Calculate evaluation loss for CTC decoder.
+        preds_size = torch.IntTensor([preds.size(1)] * batch_size)
+        # permute 'preds' to use CTCloss format
+        cost = criterion(preds.log_softmax(2).permute(1, 0, 2), text_for_loss, preds_size, length_for_loss)
 
-        else:
-            preds = model(image, text_for_pred, is_train=False)
-            forward_time = time.time() - start_time
-
-            preds = preds[:, :text_for_loss.shape[1] - 1, :]
-            target = text_for_loss[:, 1:]  # without [GO] Symbol
-            cost = criterion(preds.contiguous().view(-1, preds.shape[-1]), target.contiguous().view(-1))
-
-            # select max probabilty (greedy decoding) then decode index to character
+        if train_settings['decode'] == 'greedy':
+            # Select max probabilty (greedy decoding) then decode index to character
             _, preds_index = preds.max(2)
-            preds_str = converter.decode(preds_index, length_for_pred)
-            labels = converter.decode(text_for_loss[:, 1:], length_for_loss)
+            preds_index = preds_index.view(-1)
+            preds_str = converter.decode_greedy(preds_index.data, preds_size.data)
+        elif train_settings['decode'] == 'beamsearch':
+            preds_str = converter.decode_beamsearch(preds, beamWidth=2)
+
 
         infer_time += forward_time
         valid_loss_avg.add(cost)
@@ -65,12 +53,6 @@ def validation(model, criterion, evaluation_loader, converter, opt, device):
         confidence_score_list = []
         
         for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
-            if 'Attn' in opt.Prediction:
-                gt = gt[:gt.find('[s]')]
-                pred_EOS = pred.find('[s]')
-                pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
-                pred_max_prob = pred_max_prob[:pred_EOS]
-
             if pred == gt:
                 n_correct += 1
 

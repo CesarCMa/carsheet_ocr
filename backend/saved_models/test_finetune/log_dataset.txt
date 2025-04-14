@@ -106,3 +106,12 @@ num samples per batch: 32
 dataset_root:    model_train/data/en_sample	 dataset: /
 sub-directory:	/.	 num samples: 794
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+dataset_root: model_train/data/en_sample
+dataset_root:    model_train/data/en_sample	 dataset: /
+sub-directory:	/.	 num samples: 794
+num total samples: 794 x 1.0 (total_data_usage_ratio) = 794
+num samples per batch: 32
+dataset_root:    model_train/data/en_sample	 dataset: /
+sub-directory:	/.	 num samples: 794
+--------------------------------------------------------------------------------
