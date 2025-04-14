@@ -1,6 +1,7 @@
 import random
 import sys
 import time
+from test import validation
 
 import numpy as np
 import torch
@@ -17,8 +18,6 @@ from torch.amp.grad_scaler import GradScaler
 from utils import Averager
 
 from app.core.recognition import CTCLabelConverter, VGGModel
-
-from test import validation
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -94,7 +93,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     )
 
     if train_settings["saved_model"]:
-        pretrained_dict = torch.load(train_settings["saved_model"])
+        pretrained_dict = torch.load(train_settings["saved_model"], map_location=device)
         if train_settings["new_prediction"]:
             model.Prediction = nn.Linear(
                 model.SequenceModeling_output, len(pretrained_dict["module.Prediction.weight"])
@@ -180,8 +179,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         f"./saved_models/{train_settings['experiment_name']}/opt.txt", "a", encoding="utf8"
     ) as opt_file:
         opt_log = "------------ Options -------------\n"
-        args = vars(train_settings)
-        for k, v in args.items():
+        for k, v in train_settings.items():
             opt_log += f"{str(k)}: {str(v)}\n"
         opt_log += "---------------------------------------\n"
         logger.info(opt_log)
@@ -215,7 +213,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 text, length = converter.encode(labels)
                 batch_size = image.size(0)
 
-                preds = model(image, text).log_softmax(2)
+                preds = model(image).log_softmax(2)
                 preds_size = torch.IntTensor([preds.size(1)] * batch_size)
                 preds = preds.permute(1, 0, 2)
                 torch.backends.cudnn.enabled = False
@@ -233,7 +231,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
             text, length = converter.encode(labels)
             batch_size = image.size(0)
 
-            preds = model(image, text).log_softmax(2)
+            preds = model(image).log_softmax(2)
             preds_size = torch.IntTensor([preds.size(1)] * batch_size)
             preds = preds.permute(1, 0, 2)
             torch.backends.cudnn.enabled = False

@@ -93,10 +93,10 @@ class Batch_Balanced_Dataset(object):
 
     def get_batch(self):
         try:
-            image, text = self.dataloader_iter.next()
+            image, text = self.dataloader_iter.__next__()
         except StopIteration:
             self.dataloader_iter = iter(self.data_loader)
-            image, text = self.dataloader_iter.next()
+            image, text = self.dataloader_iter.__next__()
         except ValueError:
             return None, None
 
@@ -176,8 +176,7 @@ class OCRDataset(Dataset):
         else:
             img = Image.open(img_fpath).convert("L")
 
-        if not self.training_settings['sensitive']:
-            label = label.lower()
+        label = label.lower()
 
         # We only train and evaluate on alphanumerics (or pre-defined character set in train.py)
         out_of_char = f"[^{self.training_settings['character']}]"

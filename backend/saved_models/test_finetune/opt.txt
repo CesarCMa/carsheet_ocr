@@ -1,0 +1,264 @@
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_g2.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_g2.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_g2.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_g2.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_g2.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_1.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_1.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------
+------------ Options -------------
+network_params: {'input_channel': 1, 'output_channel': 256, 'hidden_size': 256}
+image_height: 64
+image_width: 256
+rgb: False
+contrast_adjust: False
+pad: True
+batch_size: 32
+num_iter: 10
+val_interval: 2
+workers: 2
+grad_clip: 5.0
+train_data: model_train/data/en_sample
+valid_data: model_train/data/en_sample
+total_data_usage_ratio: 1.0
+data_filtering_off: False
+batch_max_length: 25
+transformation: None
+feature_extraction: VGG
+sequence_modeling: BiLSTM
+optim: adam
+lr: 1.0
+rho: 0.95
+eps: 1e-08
+saved_model: model_train/model_checkpoints/english_1.pth
+experiment_name: test_finetune
+new_prediction: False
+finetune: True
+freeze_feature_extraction: True
+freeze_sequence_modeling: False
+character: 0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ €ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lang_list: ['en']
+---------------------------------------

@@ -37,7 +37,7 @@ rho: 0.95
 eps: 1.0e-8
 
 # Model loading and saving
-saved_model: "model_train/model_checkpoints/english_g2.pth"
+saved_model: "model_train/model_checkpoints/english_1.pth"
 experiment_name: "test_finetune"
 new_prediction: false
 finetune: true
