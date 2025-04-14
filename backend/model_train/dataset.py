@@ -38,7 +38,11 @@ class Batch_Balanced_Dataset(object):
         For example, when select_data is "MJ-ST" and batch_ratio is "0.5-0.5",
         the 50% of the batch is filled with MJ and the other 50% of the batch is filled with ST.
         """
-        log = open(f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt", "a")
+
+        log_path = f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt"
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        log = open(log_path, "a")
+
         dashed_line = "-" * 80
         logger.info(dashed_line)
         log.write(dashed_line + "\n")
@@ -51,9 +55,9 @@ class Batch_Balanced_Dataset(object):
         assert len(training_settings['select_data']) == len(training_settings['batch_ratio'])
 
         _AlignCollate = AlignCollate(
-            imgH=training_settings['imgH'],
-            imgW=training_settings['imgW'],
-            keep_ratio_with_pad=training_settings['PAD'],
+            imgH=training_settings['image_height'],
+            imgW=training_settings['image_width'],
+            keep_ratio_with_pad=training_settings['pad'],
             contrast_adjust=training_settings['contrast_adjust'],
         )
         self.data_loader_list = []
