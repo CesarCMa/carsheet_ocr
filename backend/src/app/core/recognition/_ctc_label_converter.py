@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from src.app import CONFIG_PATH
+from app import CONFIG_PATH
 
 
 class CTCLabelConverter:

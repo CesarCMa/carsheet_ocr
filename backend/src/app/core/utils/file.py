@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from loguru import logger
 import yaml
 
-from src.app import CONFIG_PATH, MODELS_PATH
+from app import CONFIG_PATH, MODELS_PATH
 from . import errors
 
 

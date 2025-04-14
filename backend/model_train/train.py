@@ -16,14 +16,13 @@ from torch.amp.autocast_mode import autocast
 from torch.amp.grad_scaler import GradScaler
 from utils import Averager
 
-from src.app.core.recognition import CTCLabelConverter, VGGModel
+from app.core.recognition import CTCLabelConverter, VGGModel
 
-from .test import validation
+from test import validation
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# TODO: update code to admit train_settings dict
 def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     """
     Trains a text recognition model using the specified training settings.

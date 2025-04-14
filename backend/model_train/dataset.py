@@ -9,6 +9,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data import ConcatDataset, Dataset, Subset
+from loguru import logger
 
 
 def contrast_grey(img):
@@ -31,59 +32,59 @@ def adjust_contrast_grey(img, target=0.4):
 
 class Batch_Balanced_Dataset(object):
 
-    def __init__(self, opt):
+    def __init__(self, training_settings):
         """
         Modulate the data ratio in the batch.
         For example, when select_data is "MJ-ST" and batch_ratio is "0.5-0.5",
         the 50% of the batch is filled with MJ and the other 50% of the batch is filled with ST.
         """
-        log = open(f"./saved_models/{opt.experiment_name}/log_dataset.txt", "a")
+        log = open(f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt", "a")
         dashed_line = "-" * 80
-        print(dashed_line)
+        logger.info(dashed_line)
         log.write(dashed_line + "\n")
-        print(
-            f"dataset_root: {opt.train_data}\nopt.select_data: {opt.select_data}\nopt.batch_ratio: {opt.batch_ratio}"
+        logger.info(
+            f"dataset_root: {training_settings['train_data']}\ntraining_settings['select_data']: {training_settings['select_data']}\ntraining_settings['batch_ratio']: {training_settings['batch_ratio']}"
         )
         log.write(
-            f"dataset_root: {opt.train_data}\nopt.select_data: {opt.select_data}\nopt.batch_ratio: {opt.batch_ratio}\n"
+            f"dataset_root: {training_settings['train_data']}\ntraining_settings['select_data']: {training_settings['select_data']}\ntraining_settings['batch_ratio']: {training_settings['batch_ratio']}\n"
         )
-        assert len(opt.select_data) == len(opt.batch_ratio)
+        assert len(training_settings['select_data']) == len(training_settings['batch_ratio'])
 
         _AlignCollate = AlignCollate(
-            imgH=opt.imgH,
-            imgW=opt.imgW,
-            keep_ratio_with_pad=opt.PAD,
-            contrast_adjust=opt.contrast_adjust,
+            imgH=training_settings['imgH'],
+            imgW=training_settings['imgW'],
+            keep_ratio_with_pad=training_settings['PAD'],
+            contrast_adjust=training_settings['contrast_adjust'],
         )
         self.data_loader_list = []
         self.dataloader_iter_list = []
         batch_size_list = []
         Total_batch_size = 0
-        for selected_d, batch_ratio_d in zip(opt.select_data, opt.batch_ratio):
-            _batch_size = max(round(opt.batch_size * float(batch_ratio_d)), 1)
-            print(dashed_line)
+        for selected_d, batch_ratio_d in zip(training_settings['select_data'], training_settings['batch_ratio']):
+            _batch_size = max(round(training_settings['batch_size'] * float(batch_ratio_d)), 1)
+            logger.info(dashed_line)
             log.write(dashed_line + "\n")
             _dataset, _dataset_log = hierarchical_dataset(
-                root=opt.train_data, opt=opt, select_data=[selected_d]
+                root=training_settings['train_data'], training_settings=training_settings, select_data=[selected_d]
             )
             total_number_dataset = len(_dataset)
             log.write(_dataset_log)
 
             """
-            The total number of data can be modified with opt.total_data_usage_ratio.
-            ex) opt.total_data_usage_ratio = 1 indicates 100% usage, and 0.2 indicates 20% usage.
+            The total number of data can be modified with training_settings['total_data_usage_ratio'].
+            ex) training_settings['total_data_usage_ratio'] = 1 indicates 100% usage, and 0.2 indicates 20% usage.
             See 4.2 section in our paper.
             """
-            number_dataset = int(total_number_dataset * float(opt.total_data_usage_ratio))
+            number_dataset = int(total_number_dataset * float(training_settings['total_data_usage_ratio']))
             dataset_split = [number_dataset, total_number_dataset - number_dataset]
             indices = range(total_number_dataset)
             _dataset, _ = [
                 Subset(_dataset, indices[offset - length : offset])
                 for offset, length in zip(accumulate(dataset_split), dataset_split)
             ]
-            selected_d_log = f"num total samples of {selected_d}: {total_number_dataset} x {opt.total_data_usage_ratio} (total_data_usage_ratio) = {len(_dataset)}\n"
-            selected_d_log += f"num samples of {selected_d} per batch: {opt.batch_size} x {float(batch_ratio_d)} (batch_ratio) = {_batch_size}"
-            print(selected_d_log)
+            selected_d_log = f"num total samples of {selected_d}: {total_number_dataset} x {training_settings['total_data_usage_ratio']} (total_data_usage_ratio) = {len(_dataset)}\n"
+            selected_d_log += f"num samples of {selected_d} per batch: {training_settings['batch_size']} x {float(batch_ratio_d)} (batch_ratio) = {_batch_size}"
+            logger.info(selected_d_log)
             log.write(selected_d_log + "\n")
             batch_size_list.append(str(_batch_size))
             Total_batch_size += _batch_size
@@ -92,7 +93,7 @@ class Batch_Balanced_Dataset(object):
                 _dataset,
                 batch_size=_batch_size,
                 shuffle=True,
-                num_workers=int(opt.workers),  # prefetch_factor=2,persistent_workers=True,
+                num_workers=int(training_settings['workers']),  # prefetch_factor=2,persistent_workers=True,
                 collate_fn=_AlignCollate,
                 pin_memory=True,
             )
@@ -103,9 +104,9 @@ class Batch_Balanced_Dataset(object):
         batch_size_sum = "+".join(batch_size_list)
         Total_batch_size_log += f"Total_batch_size: {batch_size_sum} = {Total_batch_size}\n"
         Total_batch_size_log += f"{dashed_line}"
-        opt.batch_size = Total_batch_size
+        training_settings['batch_size'] = Total_batch_size
 
-        print(Total_batch_size_log)
+        logger.info(Total_batch_size_log)
         log.write(Total_batch_size_log + "\n")
         log.close()
 
@@ -131,11 +132,11 @@ class Batch_Balanced_Dataset(object):
         return balanced_batch_images, balanced_batch_texts
 
 
-def hierarchical_dataset(root, opt, select_data="/"):
+def hierarchical_dataset(root, training_settings, select_data="/"):
     """select_data='/' contains all sub-directory of root directory"""
     dataset_list = []
     dataset_log = f"dataset_root:    {root}\t dataset: {select_data[0]}"
-    print(dataset_log)
+    logger.info(dataset_log)
     dataset_log += "\n"
     for dirpath, dirnames, filenames in os.walk(root + "/"):
         if not dirnames:
@@ -146,9 +147,9 @@ def hierarchical_dataset(root, opt, select_data="/"):
                     break
 
             if select_flag:
-                dataset = OCRDataset(dirpath, opt)
+                dataset = OCRDataset(dirpath, training_settings)
                 sub_dataset_log = f"sub-directory:\t/{os.path.relpath(dirpath, root)}\t num samples: {len(dataset)}"
-                print(sub_dataset_log)
+                logger.info(sub_dataset_log)
                 dataset_log += f"{sub_dataset_log}\n"
                 dataset_list.append(dataset)
 
@@ -159,11 +160,11 @@ def hierarchical_dataset(root, opt, select_data="/"):
 
 class OCRDataset(Dataset):
 
-    def __init__(self, root, opt):
+    def __init__(self, root, training_settings):
 
         self.root = root
-        self.opt = opt
-        print(root)
+        self.training_settings = training_settings
+        logger.info(root)
         self.df = pd.read_csv(
             os.path.join(root, "labels.csv"),
             sep="^([^,]+),",
@@ -173,18 +174,18 @@ class OCRDataset(Dataset):
         )
         self.nSamples = len(self.df)
 
-        if self.opt.data_filtering_off:
+        if self.training_settings['data_filtering_off']:
             self.filtered_index_list = [index + 1 for index in range(self.nSamples)]
         else:
             self.filtered_index_list = []
             for index in range(self.nSamples):
                 label = self.df.at[index, "words"]
                 try:
-                    if len(label) > self.opt.batch_max_length:
+                    if len(label) > self.training_settings['batch_max_length']:
                         continue
                 except:
-                    print(label)
-                out_of_char = f"[^{self.opt.character}]"
+                    logger.error(label)
+                out_of_char = f"[^{self.training_settings['character']}]"
                 if re.search(out_of_char, label.lower()):
                     continue
                 self.filtered_index_list.append(index)
@@ -199,16 +200,16 @@ class OCRDataset(Dataset):
         img_fpath = os.path.join(self.root, img_fname)
         label = self.df.at[index, "words"]
 
-        if self.opt.rgb:
+        if self.training_settings['rgb']:
             img = Image.open(img_fpath).convert("RGB")  # for color image
         else:
             img = Image.open(img_fpath).convert("L")
 
-        if not self.opt.sensitive:
+        if not self.training_settings['sensitive']:
             label = label.lower()
 
         # We only train and evaluate on alphanumerics (or pre-defined character set in train.py)
-        out_of_char = f"[^{self.opt.character}]"
+        out_of_char = f"[^{self.training_settings['character']}]"
         label = re.sub(out_of_char, "", label)
 
         return (img, label)
