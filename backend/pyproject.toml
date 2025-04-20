@@ -25,6 +25,9 @@ pandas = "^2.2.3"
 torchmetrics = "^1.7.1"
 scipy = "~1.15.2"
 nltk = "^3.8.1"
+click = "^8.1.7"
+albumentations = "^1.4.11"
+tqdm = "^4.66.4"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.4"
