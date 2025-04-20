@@ -1,7 +1,10 @@
 import { useState, useRef } from 'react'
-import ReactCrop, { Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
+import { Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import './App.css'
+import ImageRotator from './components/ImageRotator';
+import ImageCropper from './components/ImageCropper';
+import ImageResult from './components/ImageResult';
 
 // Define the stages of the image editing workflow
 type Stage = 'uploading' | 'rotating' | 'cropping' | 'displaying';
@@ -203,79 +206,33 @@ function App() {
 
         {/* Stage: Rotating */}
         {stage === 'rotating' && image && (
-          <div className="image-editor">
-            <h2>Step 1: Rotate Image</h2>
-            <div className="image-preview">
-               <div className="image-preview-container"> {/* Container for overlay */}
-                 <img
-                   ref={imageRef}
-                   src={image}
-                   alt="Uploaded preview for rotation"
-                   style={{ transform: `rotate(${rotation}deg)` }}
-                 />
-                 <div className="cross-overlay"></div> {/* The cross overlay */}
-               </div>
-            </div>
-            <div className="image-controls">
-               <div className="rotation-control">
-                 <label htmlFor="rotation-slider">Rotation: {rotation}°</label>
-                 <input
-                   id="rotation-slider"
-                   type="range" min="0" max="360" value={rotation}
-                   onChange={(e) => handleRotate(Number(e.target.value))}
-                   className="rotation-slider"
-                 />
-               </div>
-               <button onClick={handleAcceptRotation} className="crop-button"> {/* Changed label */}
-                 Accept Rotation & Proceed to Crop
-               </button>
-            </div>
-          </div>
+          <ImageRotator
+            image={image}
+            rotation={rotation}
+            onRotate={handleRotate}
+            onAcceptRotation={handleAcceptRotation}
+            imageRef={imageRef}
+          />
         )}
 
         {/* Stage: Cropping */}
         {stage === 'cropping' && rotatedImageDataUrl && (
-           <div className="image-editor">
-             <h2>Step 2: Crop Image</h2>
-             <div className="image-preview">
-               <ReactCrop
-                 crop={crop}
-                 onChange={handleCropChange} // Use specific handler
-                 aspect={undefined} // Or set a specific aspect ratio if desired
-               >
-                 {/* Display the already rotated image */}
-                 <img
-                   ref={rotatedImageRef} // Ref for the rotated image being cropped
-                   src={rotatedImageDataUrl}
-                   alt="Rotated image for cropping"
-                   // No inline rotation style needed here
-                 />
-               </ReactCrop>
-             </div>
-             <div className="image-controls">
-                {/* Rotation slider removed from this stage */}
-                <button onClick={handleCropImage} className="crop-button">
-                   Crop Image
-                </button>
-             </div>
-           </div>
+          <ImageCropper
+            rotatedImageDataUrl={rotatedImageDataUrl}
+            crop={crop}
+            onCropChange={handleCropChange}
+            onCropImage={handleCropImage}
+            rotatedImageRef={rotatedImageRef}
+          />
         )}
 
 
         {/* Stage: Displaying Result */}
         {stage === 'displaying' && croppedImage && (
-          <div className="image-editor">
-            <h2>Result</h2>
-            <div className="cropped-result">
-               <img src={croppedImage} alt="Final cropped result" />
-               <button
-                  onClick={handleEditAgain} // Use specific handler
-                  className="edit-again-button"
-               >
-                 Edit Again
-               </button>
-            </div>
-          </div>
+          <ImageResult
+            croppedImage={croppedImage}
+            onEditAgain={handleEditAgain}
+          />
         )}
 
       </div>
