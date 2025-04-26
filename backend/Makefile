@@ -14,7 +14,7 @@ deps-dev:
 
 .PHONY: start
 start:
-	cd src && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 
 .PHONY: test
 test:

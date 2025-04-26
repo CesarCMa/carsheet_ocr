@@ -1,6 +1,26 @@
+import cv2
+import numpy as np
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from src.app.services.image_detection import detect_image as detect_image_service
+
+# Helper function to convert numpy types to standard Python types
+def convert_numpy_types(obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, tuple):
+        return tuple(convert_numpy_types(item) for item in obj)  # Recurse into tuples
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    else:
+        return obj
 
 app = FastAPI(
     title="Carsheet OCR API",
@@ -27,16 +47,22 @@ async def health_check():
 
 @app.post("/detect")
 async def detect_image(file: UploadFile = File(...)):
-    # For now, return a dummy response
+    # Read image content
+    contents = await file.read()
+    nparr = np.frombuffer(contents, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Process image using the service
+    predictions_raw = detect_image_service(img)
+
+    # Convert numpy types for JSON serialization
+    predictions_serializable = convert_numpy_types(predictions_raw)
+
+    # Return predictions as JSON
     return JSONResponse(
         content={
             "status": "success",
-            "message": "Image received successfully",
-            "prediction": {
-                "make": "Toyota",
-                "model": "Camry",
-                "year": 2020,
-                "confidence": 0.95
-            }
+            "message": "Image processed successfully",
+            "predictions": predictions_serializable
         }
     ) 
