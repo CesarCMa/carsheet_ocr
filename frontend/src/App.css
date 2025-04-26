@@ -241,3 +241,145 @@ h1 {
   height: 1px;
   transform: translateY(-50%);
 }
+
+/* Styles for Prediction List */
+.detection-results-list {
+  width: 100%;
+  max-width: 800px; /* Or match image container width */
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.detection-results-list h3 {
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #333;
+}
+
+.prediction-list-columns {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  column-count: 3; /* Try for 3 columns */
+  column-gap: 2rem; /* Space between columns */
+  column-width: 200px; /* Minimum width for a column */
+}
+
+.prediction-list-columns li {
+  display: flex; /* Use flex for alignment within the list item */
+  align-items: center; /* Vertically align input and confidence */
+  gap: 0.5rem; /* Space between input and confidence */
+  margin-bottom: 0.5rem; /* Space below each item */
+  padding: 0.25rem;
+  break-inside: avoid-column; /* Try to prevent items from breaking across columns */
+  page-break-inside: avoid; /* Legacy support */
+}
+
+.prediction-list-columns li.selected {
+  background-color: #e0f7fa; /* Light blue highlight for selected item */
+  border-radius: 4px;
+}
+
+.prediction-input {
+  flex-grow: 1; /* Allow input to take available space */
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.prediction-input:focus {
+  border-color: #2196F3;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.confidence-score {
+  font-size: 0.8rem;
+  color: #555;
+  white-space: nowrap; /* Prevent confidence from wrapping */
+}
+
+/* General Button Styling */
+.action-button {
+  background-color: #2196F3;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  margin-top: 1rem;
+}
+
+.action-button:hover {
+  background-color: #1976D2;
+}
+
+/* Add specific button styles if needed, like accept rotation */
+.accept-rotation-button {
+  background-color: #4CAF50; /* Green */
+}
+
+.accept-rotation-button:hover {
+  background-color: #45a049;
+}
+
+/* Loading Indicator Style */
+.loading-indicator {
+    margin: 1rem 0;
+    font-style: italic;
+    color: #666;
+}
+
+/* Error Container Style */
+.error-container {
+    border: 1px solid #f44336; /* Red border */
+    background-color: #ffebee; /* Light red background */
+    color: #b71c1c; /* Darker red text */
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+.error-container h2 {
+    color: #c62828;
+    margin-top: 0;
+}
+
+.error-container pre {
+    background-color: #ffcdd2; /* Slightly darker red for code block */
+    padding: 0.5rem;
+    border-radius: 3px;
+    color: #3e2723; /* Dark brown text */
+    overflow-x: auto; /* Allow horizontal scrolling for long errors */
+}
+
+/* Confidence Pop-up Style */
+.confidence-popup {
+  position: absolute; /* Position relative to the nearest positioned ancestor or viewport */
+  background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent black background */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 10; /* Ensure it appears above other elements */
+  transform: translateX(-50%); /* Center horizontally based on its own width */
+  pointer-events: none; /* Prevent popup from interfering with mouse events */
+  transition: opacity 0.1s ease-in-out; /* Optional: fade effect */
+  opacity: 1;
+}
+
+.confidence-popup:not([style*="display: none"]) {
+  opacity: 1; 
+}
+
+/* Style for hidden state if needed, although visibility state handles it */
+/*
+.confidence-popup.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+*/

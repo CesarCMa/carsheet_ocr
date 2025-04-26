@@ -21,6 +21,13 @@ interface ImageResultProps {
   detectionResult: DetectionResponse | { error: string } | null; // Use the defined type
 }
 
+interface PopupState {
+  visible: boolean;
+  confidence: number | null;
+  top: number;
+  left: number;
+}
+
 const ImageResult: React.FC<ImageResultProps> = ({
   croppedImage,
   onEditAgain,
@@ -29,8 +36,10 @@ const ImageResult: React.FC<ImageResultProps> = ({
 }) => {
   const [editablePredictions, setEditablePredictions] = useState<Prediction[]>([]);
   const [selectedPredictionIndex, setSelectedPredictionIndex] = useState<number | null>(null);
+  const [popup, setPopup] = useState<PopupState>({ visible: false, confidence: null, top: 0, left: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const listRef = useRef<HTMLUListElement>(null); // Ref for the list container
 
   // Effect to parse predictions from props into local state
   useEffect(() => {
@@ -42,8 +51,10 @@ const ImageResult: React.FC<ImageResultProps> = ({
       }));
       setEditablePredictions(parsedPredictions);
       setSelectedPredictionIndex(null); // Reset selection on new results
+      setPopup({ ...popup, visible: false }); // Hide popup on new results
     } else {
       setEditablePredictions([]); // Clear predictions if result is invalid or an error
+      setPopup({ ...popup, visible: false }); // Hide popup
     }
   }, [detectionResult]);
 
@@ -113,9 +124,28 @@ const ImageResult: React.FC<ImageResultProps> = ({
     );
   };
 
-  // Handle focus on input to select prediction
-  const handleFocus = (index: number) => {
+  // Handle focus on input to select prediction and show popup
+  const handleFocus = (index: number, event: React.FocusEvent<HTMLInputElement>) => {
     setSelectedPredictionIndex(index);
+    const prediction = editablePredictions[index];
+    if (prediction) {
+        const inputRect = event.target.getBoundingClientRect();
+        const listScrollTop = listRef.current?.scrollTop || 0;
+        // Position popup slightly above the input field
+        setPopup({
+            visible: true,
+            confidence: prediction.confidence,
+            // Position relative to the viewport initially
+            top: inputRect.top + window.scrollY - 30, // Adjust vertical offset (-30)
+            left: inputRect.left + window.scrollX + inputRect.width / 2, // Center horizontally
+        });
+    }
+  };
+
+  // Handle blur on input to hide popup
+  const handleBlur = () => {
+    // Hide the popup immediately on blur
+    setPopup(prev => ({ ...prev, visible: false }));
   };
 
   // Handle image load event to trigger initial canvas sizing and drawing
@@ -183,24 +213,31 @@ const ImageResult: React.FC<ImageResultProps> = ({
       {/* Loading Indicator */} 
       {isLoading && <div className="loading-indicator">Processing...</div>}
 
+      {/* Confidence Score Popup */} 
+      {popup.visible && popup.confidence !== null && (
+          <div
+              className="confidence-popup"
+              style={{ top: `${popup.top}px`, left: `${popup.left}px` }}
+          >
+              Conf: {(popup.confidence * 100).toFixed(1)}%
+          </div>
+      )}
+
       {/* Detection Result Display & Editing */} 
       {!isLoading && editablePredictions.length > 0 && (
         <div className="detection-results-list">
           <h3>Detected Text (Editable)</h3>
-          <ul>
+          <ul ref={listRef} className="prediction-list-columns">
             {editablePredictions.map((prediction, index) => (
               <li key={index} className={index === selectedPredictionIndex ? 'selected' : ''}>
                 <input
                   type="text"
                   value={prediction.text}
                   onChange={(e) => handlePredictionTextChange(index, e.target.value)}
-                  onFocus={() => handleFocus(index)}
-                  // onClick={() => handleFocus(index)} // Optional: highlight on click too
+                  onFocus={(e) => handleFocus(index, e)}
+                  onBlur={handleBlur}
                   className="prediction-input"
                 />
-                <span className="confidence-score">
-                  ({(prediction.confidence * 100).toFixed(1)}%)
-                </span>
               </li>
             ))}
           </ul>
