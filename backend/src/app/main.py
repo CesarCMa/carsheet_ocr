@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from src.app.services.image_detection import detect_image as detect_image_service
 
-# Helper function to convert numpy types to standard Python types
 def convert_numpy_types(obj):
     if isinstance(obj, np.integer):
         return int(obj)
@@ -28,7 +27,6 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, replace with specific origins
@@ -47,22 +45,18 @@ async def health_check():
 
 @app.post("/detect")
 async def detect_image(file: UploadFile = File(...)):
-    # Read image content
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Process image using the service
-    predictions_raw = detect_image_service(img)
-
-    # Convert numpy types for JSON serialization
+    predictions_raw, descriptions = detect_image_service(img)
     predictions_serializable = convert_numpy_types(predictions_raw)
 
-    # Return predictions as JSON
     return JSONResponse(
         content={
             "status": "success",
             "message": "Image processed successfully",
-            "predictions": predictions_serializable
+            "predictions": predictions_serializable,
+            "code_descriptions": descriptions
         }
     ) 

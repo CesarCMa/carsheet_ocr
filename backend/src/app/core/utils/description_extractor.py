@@ -31,7 +31,7 @@ def find_descriptions(detected_text_boxes, target_codes):
     target_codes -- List of codes to find descriptions for
     
     Returns:
-    Dictionary mapping codes to their descriptions
+    Dictionary mapping codes to a dict containing pred_index and description
     """
     # Parameters to adjust
     Y_TOLERANCE = 15  # Maximum vertical difference (in pixels) to consider boxes as being in the same row
@@ -56,7 +56,7 @@ def find_descriptions(detected_text_boxes, target_codes):
         
         # If code was not found, add None to dictionary and continue to next code
         if code_box_index is None:
-            code_descriptions[target_code] = None
+            code_descriptions[target_code] = {"pred_index": None, "description": None}
             continue
         
         # Code was found, now find the closest text box to its right
@@ -68,6 +68,7 @@ def find_descriptions(detected_text_boxes, target_codes):
         code_center_y = sum(point[1] for point in code_coords) / 4
         
         closest_desc = None
+        closest_desc_index = None
         min_distance = float('inf')
         
         # Check each text box to find the closest one to the right
@@ -96,8 +97,12 @@ def find_descriptions(detected_text_boxes, target_codes):
                     if distance < min_distance:
                         min_distance = distance
                         closest_desc = box_text
+                        closest_desc_index = i
         
         # Add to result dictionary
-        code_descriptions[target_code] = closest_desc
+        code_descriptions[target_code] = {
+            "pred_index": closest_desc_index,
+            "description": closest_desc
+        }
     
     return code_descriptions
