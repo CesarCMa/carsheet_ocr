@@ -2,8 +2,12 @@
 import cv2
 import numpy as np
 from typing import List, Any
+
+import pandas as pd
 from src.app.core.detection import CraftDetector, BoxMerger
 from src.app.core.recognition import VGGRecognizer
+from src.app.core.utils.description_extractor import find_descriptions
+from src.app import CONFIG_PATH
 
 
 def detect_image(image: np.ndarray) -> List[Any]:
@@ -25,4 +29,7 @@ def detect_image(image: np.ndarray) -> List[Any]:
     recon_model = VGGRecognizer(lang_list=["en", "es"])
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
 
-    return predictions
+    sheet_codes = pd.read_csv(CONFIG_PATH / "sheet_codes.csv")
+    descriptions = find_descriptions(predictions, sheet_codes["code"].tolist())
+
+    return predictions, descriptions
