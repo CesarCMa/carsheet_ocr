@@ -21,6 +21,20 @@ def normalize_code(code):
     
     return code
 
+def convert_coords_to_int(coords):
+    """
+    Convert numpy coordinates to regular Python integers.
+    
+    Parameters:
+    coords -- List of coordinate points [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+    
+    Returns:
+    List of coordinate points with regular Python integers
+    """
+    if coords is None:
+        return None
+    return [[int(point[0]), int(point[1])] for point in coords]
+
 def find_descriptions(detected_text_boxes, target_codes):
     """
     Find descriptions for the given codes based on proximity in the OCR results.
@@ -31,7 +45,7 @@ def find_descriptions(detected_text_boxes, target_codes):
     target_codes -- List of codes to find descriptions for
     
     Returns:
-    Dictionary mapping codes to a dict containing pred_index and description
+    Dictionary mapping codes to a dict containing pred_index, description, code_coords, and desc_coords
     """
     # Parameters to adjust
     Y_TOLERANCE = 15  # Maximum vertical difference (in pixels) to consider boxes as being in the same row
@@ -56,7 +70,12 @@ def find_descriptions(detected_text_boxes, target_codes):
         
         # If code was not found, add None to dictionary and continue to next code
         if code_box_index is None:
-            code_descriptions[target_code] = {"pred_index": None, "description": None}
+            code_descriptions[target_code] = {
+                "pred_index": None,
+                "description": None,
+                "code_coords": None,
+                "desc_coords": None
+            }
             continue
         
         # Code was found, now find the closest text box to its right
@@ -69,6 +88,7 @@ def find_descriptions(detected_text_boxes, target_codes):
         
         closest_desc = None
         closest_desc_index = None
+        closest_desc_coords = None
         min_distance = float('inf')
         
         # Check each text box to find the closest one to the right
@@ -98,11 +118,14 @@ def find_descriptions(detected_text_boxes, target_codes):
                         min_distance = distance
                         closest_desc = box_text
                         closest_desc_index = i
+                        closest_desc_coords = box_coords
         
         # Add to result dictionary
         code_descriptions[target_code] = {
             "pred_index": closest_desc_index,
-            "description": closest_desc
+            "description": closest_desc,
+            "code_coords": convert_coords_to_int(code_coords),
+            "desc_coords": convert_coords_to_int(closest_desc_coords)
         }
     
     return code_descriptions
