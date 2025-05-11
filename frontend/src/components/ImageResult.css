@@ -17,6 +17,7 @@
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
+  vertical-align: middle;
 }
 
 .detection-results-table th {
@@ -30,12 +31,14 @@
 }
 
 .description-input {
-  width: 100%;
+  width: calc(100% - 16px);
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   transition: border-color 0.2s;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .description-input:focus {
