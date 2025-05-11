@@ -30,6 +30,6 @@ def detect_image(image: np.ndarray) -> List[Any]:
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
 
     sheet_codes = pd.read_csv(CONFIG_PATH / "sheet_codes.csv")
-    descriptions = find_descriptions(predictions, sheet_codes["code"].tolist())
+    descriptions = find_descriptions(predictions, sheet_codes)
 
     return predictions, descriptions

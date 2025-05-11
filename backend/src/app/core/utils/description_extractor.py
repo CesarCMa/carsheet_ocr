@@ -35,17 +35,17 @@ def convert_coords_to_int(coords):
         return None
     return [[int(point[0]), int(point[1])] for point in coords]
 
-def find_descriptions(detected_text_boxes, target_codes):
+def find_descriptions(detected_text_boxes, sheet_codes_df):
     """
     Find descriptions for the given codes based on proximity in the OCR results.
     
     Parameters:
     detected_text_boxes -- List of detected text boxes with format:
                           [([[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ['text', confidence])]
-    target_codes -- List of codes to find descriptions for
+    sheet_codes_df -- DataFrame containing the codes and their descriptions
     
     Returns:
-    Dictionary mapping codes to a dict containing pred_index, description, code_coords, and desc_coords
+    Dictionary mapping codes to a dict containing pred_index, description, code_coords, desc_coords, and code_name
     """
     # Parameters to adjust
     Y_TOLERANCE = 15  # Maximum vertical difference (in pixels) to consider boxes as being in the same row
@@ -54,7 +54,8 @@ def find_descriptions(detected_text_boxes, target_codes):
     code_descriptions = {}
     
     # Process each code
-    for target_code in target_codes:
+    for _, row in sheet_codes_df.iterrows():
+        target_code = row['code']
         target_code_lower = target_code.lower()
         target_code_normalized = normalize_code(target_code_lower)
         code_box_index = None
@@ -74,7 +75,8 @@ def find_descriptions(detected_text_boxes, target_codes):
                 "pred_index": None,
                 "description": None,
                 "code_coords": None,
-                "desc_coords": None
+                "desc_coords": None,
+                "code_name": row['description'] if 'description' in row else None
             }
             continue
         
@@ -125,7 +127,8 @@ def find_descriptions(detected_text_boxes, target_codes):
             "pred_index": closest_desc_index,
             "description": closest_desc,
             "code_coords": convert_coords_to_int(code_coords),
-            "desc_coords": convert_coords_to_int(closest_desc_coords)
+            "desc_coords": convert_coords_to_int(closest_desc_coords),
+            "code_name": row['description'] if 'description' in row else None
         }
     
-    return code_descriptions
+    return {k.upper(): v for k, v in code_descriptions.items()}
