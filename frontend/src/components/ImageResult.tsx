@@ -5,6 +5,7 @@ import './ImageResult.css';
 interface CodePrediction {
   pred_index: number;
   description: string;
+  code_name: string;
   code_coords: [number, number][];
   desc_coords: [number, number][];
 }
@@ -185,13 +186,15 @@ const ImageResult: React.FC<ImageResultProps> = ({
             <thead>
               <tr>
                 <th>Code</th>
+                <th>Code Name</th>
                 <th>Description</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(detectionResult.code_descriptions).map(([code]) => (
+              {Object.entries(detectionResult.code_descriptions).map(([code, prediction]) => (
                 <tr key={code}>
                   <td>{code}</td>
+                  <td>{prediction.code_name}</td>
                   <td>
                     <input
                       type="text"
