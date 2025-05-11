@@ -51,7 +51,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     train_dataset = Batch_Balanced_Dataset(train_settings)
 
     log = open(
-        f"./saved_models/{train_settings["experiment_name"]}/log_dataset.txt", "a", encoding="utf8"
+        f"./saved_models/{train_settings['experiment_name']}/log_dataset.txt", "a", encoding="utf8"
     )
     AlignCollate_valid = AlignCollate(
         imgH=train_settings["image_height"],
@@ -89,7 +89,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         num_class=num_class,
     )
     logger.info(
-        f'model input parameters {train_settings["image_height"]} {train_settings["image_width"]} {train_settings["network_params"]["input_channel"]} {train_settings["network_params"]["output_channel"]} {train_settings["network_params"]["hidden_size"]} {num_class} {train_settings["batch_max_length"]} {train_settings["transformation"]} {train_settings["feature_extraction"]} {train_settings["sequence_modeling"]}'
+        f"model input parameters {train_settings['image_height']} {train_settings['image_width']} {train_settings['network_params']['input_channel']} {train_settings['network_params']['output_channel']} {train_settings['network_params']['hidden_size']} {num_class} {train_settings['batch_max_length']} {train_settings['transformation']} {train_settings['feature_extraction']} {train_settings['sequence_modeling']}"
     )
 
     if train_settings["saved_model"]:
