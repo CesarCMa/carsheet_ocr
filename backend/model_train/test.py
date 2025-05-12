@@ -23,7 +23,7 @@ def validation(model, criterion, evaluation_loader, converter, train_settings, d
         length_for_pred = torch.IntTensor([train_settings['batch_max_length']] * batch_size).to(device)
         text_for_pred = torch.LongTensor(batch_size, train_settings['batch_max_length'] + 1).fill_(0).to(device)
 
-        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=train_settings['batch_max_length'])
+        text_for_loss, length_for_loss = converter.encode(labels)
         
         start_time = time.time()
 
@@ -35,13 +35,10 @@ def validation(model, criterion, evaluation_loader, converter, train_settings, d
         # permute 'preds' to use CTCloss format
         cost = criterion(preds.log_softmax(2).permute(1, 0, 2), text_for_loss, preds_size, length_for_loss)
 
-        if train_settings['decode'] == 'greedy':
-            # Select max probabilty (greedy decoding) then decode index to character
-            _, preds_index = preds.max(2)
-            preds_index = preds_index.view(-1)
-            preds_str = converter.decode_greedy(preds_index.data, preds_size.data)
-        elif train_settings['decode'] == 'beamsearch':
-            preds_str = converter.decode_beamsearch(preds, beamWidth=2)
+        # Select max probabilty (greedy decoding) then decode index to character
+        _, preds_index = preds.max(2)
+        preds_index = preds_index.view(-1)
+        preds_str = converter.decode_greedy(preds_index.data, preds_size.data)
 
 
         infer_time += forward_time
