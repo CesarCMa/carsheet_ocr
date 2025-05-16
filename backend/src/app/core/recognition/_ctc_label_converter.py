@@ -88,7 +88,11 @@ class CTCLabelConverter:
             c = a & b
 
             # Gets the corresponding character according to the saved indexes
-            text = "".join(np.array(self.character)[t[c.nonzero()]])
+            # Use c.nonzero()[0] to get the flat array of indices
+            # Convert the result directly to list for join
+            selected_indices = t[c.nonzero()[0]] # Get the character indices from t
+            selected_chars = np.array(self.character)[selected_indices] # Get the characters
+            text = "".join(list(selected_chars)) # Join the characters
             texts.append(text)
             index += l
 
