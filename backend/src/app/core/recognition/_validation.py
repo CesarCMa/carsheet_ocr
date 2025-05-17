@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torchmetrics.functional.text import edit_distance
 
 
-def validation(model, criterion, evaluation_loader, converter, opt, device, current_epoch: int, train_loss_value: float):
+def validation(model, criterion, evaluation_loader, converter, opt, device):
     """ validation or evaluation """
     n_correct = 0
     norm_ED = 0
@@ -72,25 +72,6 @@ def validation(model, criterion, evaluation_loader, converter, opt, device, curr
 
     accuracy = n_correct / float(length_of_data) * 100
     norm_ED = norm_ED / float(length_of_data) # ICDAR2019 Normalized Edit Distance
-
-    # CSV Logging
-    # Assuming opt has an 'experiment_name' attribute like train_settings
-    experiment_name = getattr(opt, 'experiment_name', 'default_experiment') 
-    saved_models_dir = f"./saved_models/{experiment_name}/"
-    csv_file_path = os.path.join(saved_models_dir, "losses_log.csv")
-
-    os.makedirs(saved_models_dir, exist_ok=True) # Ensure directory exists
-
-    file_exists = os.path.isfile(csv_file_path)
-
-    with open(csv_file_path, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(['epoch', 'train_loss', 'validation_loss'])
-        
-        # valid_loss_avg.val() returns a tensor, so use .item()
-        current_validation_loss = valid_loss_avg.val().item() 
-        writer.writerow([current_epoch, train_loss_value, current_validation_loss])
 
     return valid_loss_avg.val(), accuracy, norm_ED, preds_str, confidence_score_list, labels, infer_time, length_of_data
 

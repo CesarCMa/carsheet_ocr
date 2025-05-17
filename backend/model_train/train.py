@@ -1,6 +1,8 @@
 import random
 import sys
 import time
+import csv
+import os
 from test import validation
 
 import numpy as np
@@ -272,7 +274,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
                 # training loss and validation loss
                 loss_log = f"[{i}/{train_settings['num_iter']}] Train loss: {loss_avg.val():0.5f}, Valid loss: {valid_loss:0.5f}, Elapsed_time: {elapsed_time:0.5f}"
-                loss_avg.reset()
+                # loss_avg.reset() # Moved reset after CSV logging
 
                 current_model_log = f'{"Current_accuracy":17s}: {current_accuracy:0.3f}, {"Current_norm_ED":17s}: {current_norm_ED:0.4f}'
 
@@ -294,6 +296,25 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 loss_model_log = f"{loss_log}\n{current_model_log}\n{best_model_log}"
                 logger.info(loss_model_log)
                 log.write(loss_model_log + "\n")
+
+                # CSV Logging of losses
+                experiment_name = train_settings['experiment_name']
+                saved_models_dir = f"./saved_models/{experiment_name}/"
+                csv_file_path = os.path.join(saved_models_dir, "losses_log.csv")
+                # Ensure directory exists, though it should have been created for opt.txt and log_dataset.txt
+                os.makedirs(saved_models_dir, exist_ok=True) 
+
+                file_exists = os.path.isfile(csv_file_path)
+                current_train_loss = loss_avg.val().item()
+                current_valid_loss = valid_loss.item()
+
+                with open(csv_file_path, mode='a', newline='') as csv_file:
+                    loss_writer = csv.writer(csv_file)
+                    if not file_exists:
+                        loss_writer.writerow(['iteration', 'train_loss', 'validation_loss'])
+                    loss_writer.writerow([i, current_train_loss, current_valid_loss])
+                
+                loss_avg.reset() # Reset train loss averager after logging
 
                 # show some predicted results
                 dashed_line = "-" * 80
