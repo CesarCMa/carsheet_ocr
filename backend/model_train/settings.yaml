@@ -8,7 +8,7 @@ network_params:
 image_height: 64
 image_width: 256
 rgb: false
-contrast_adjust: false
+contrast_adjust: true
 pad: true
 
 # Training parameters
@@ -32,9 +32,10 @@ sequence_modeling: "BiLSTM"
 
 # Optimization
 optim: "adam"
-lr: 1.0
+lr: 1.0e-4
 rho: 0.95
 eps: 1.0e-8
+weight_decay: 1.0e-4
 
 # Model loading and saving
 saved_model: "model_train/model_checkpoints/english_1.pth"

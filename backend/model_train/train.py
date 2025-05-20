@@ -165,7 +165,11 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     # setup optimizer
     if train_settings["optim"] == "adam":
         # optimizer = optim.Adam(filtered_parameters, lr=train_settings["lr"], betas=(train_settings["beta1"], 0.999))
-        optimizer = optim.Adam(filtered_parameters)
+        optimizer = optim.Adam(
+            filtered_parameters,
+            lr=train_settings["lr"],
+            weight_decay=train_settings.get("weight_decay", 0)
+        )
     else:
         optimizer = optim.Adadelta(
             filtered_parameters,
