@@ -311,8 +311,8 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 with open(csv_file_path, mode='a', newline='') as csv_file:
                     loss_writer = csv.writer(csv_file)
                     if not file_exists:
-                        loss_writer.writerow(['iteration', 'train_loss', 'validation_loss'])
-                    loss_writer.writerow([i, current_train_loss, current_valid_loss])
+                        loss_writer.writerow(['iteration', 'train_loss', 'validation_loss', 'accuracy', 'norm_ED'])
+                    loss_writer.writerow([i, current_train_loss, current_valid_loss, current_accuracy, current_norm_ED])
                 
                 loss_avg.reset() # Reset train loss averager after logging
 
