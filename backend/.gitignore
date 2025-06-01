@@ -33,8 +33,13 @@ ENV/
 *.swp
 *.swo
 
+# macOS
+.DS_Store
+**/.DS_Store
+
 # Project specific
 uploads/
 *.log 
 models/*
 model_train/data/*
+saved_models/

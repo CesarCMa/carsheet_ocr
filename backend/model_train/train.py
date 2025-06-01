@@ -1,6 +1,8 @@
 import random
 import sys
 import time
+import csv
+import os
 from test import validation
 
 import numpy as np
@@ -51,7 +53,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     train_dataset = Batch_Balanced_Dataset(train_settings)
 
     log = open(
-        f"./saved_models/{train_settings["experiment_name"]}/log_dataset.txt", "a", encoding="utf8"
+        f"./saved_models/{train_settings['experiment_name']}/log_dataset.txt", "a", encoding="utf8"
     )
     AlignCollate_valid = AlignCollate(
         imgH=train_settings["image_height"],
@@ -89,7 +91,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         num_class=num_class,
     )
     logger.info(
-        f'model input parameters {train_settings["image_height"]} {train_settings["image_width"]} {train_settings["network_params"]["input_channel"]} {train_settings["network_params"]["output_channel"]} {train_settings["network_params"]["hidden_size"]} {num_class} {train_settings["batch_max_length"]} {train_settings["transformation"]} {train_settings["feature_extraction"]} {train_settings["sequence_modeling"]}'
+        f"model input parameters {train_settings['image_height']} {train_settings['image_width']} {train_settings['network_params']['input_channel']} {train_settings['network_params']['output_channel']} {train_settings['network_params']['hidden_size']} {num_class} {train_settings['batch_max_length']} {train_settings['transformation']} {train_settings['feature_extraction']} {train_settings['sequence_modeling']}"
     )
 
     if train_settings["saved_model"]:
@@ -163,7 +165,11 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     # setup optimizer
     if train_settings["optim"] == "adam":
         # optimizer = optim.Adam(filtered_parameters, lr=train_settings["lr"], betas=(train_settings["beta1"], 0.999))
-        optimizer = optim.Adam(filtered_parameters)
+        optimizer = optim.Adam(
+            filtered_parameters,
+            lr=train_settings["lr"],
+            weight_decay=train_settings.get("weight_decay", 0)
+        )
     else:
         optimizer = optim.Adadelta(
             filtered_parameters,
@@ -272,7 +278,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
                 # training loss and validation loss
                 loss_log = f"[{i}/{train_settings['num_iter']}] Train loss: {loss_avg.val():0.5f}, Valid loss: {valid_loss:0.5f}, Elapsed_time: {elapsed_time:0.5f}"
-                loss_avg.reset()
+                # loss_avg.reset() # Moved reset after CSV logging
 
                 current_model_log = f'{"Current_accuracy":17s}: {current_accuracy:0.3f}, {"Current_norm_ED":17s}: {current_norm_ED:0.4f}'
 
@@ -294,6 +300,25 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 loss_model_log = f"{loss_log}\n{current_model_log}\n{best_model_log}"
                 logger.info(loss_model_log)
                 log.write(loss_model_log + "\n")
+
+                # CSV Logging of losses
+                experiment_name = train_settings['experiment_name']
+                saved_models_dir = f"./saved_models/{experiment_name}/"
+                csv_file_path = os.path.join(saved_models_dir, "losses_log.csv")
+                # Ensure directory exists, though it should have been created for opt.txt and log_dataset.txt
+                os.makedirs(saved_models_dir, exist_ok=True) 
+
+                file_exists = os.path.isfile(csv_file_path)
+                current_train_loss = loss_avg.val().item()
+                current_valid_loss = valid_loss.item()
+
+                with open(csv_file_path, mode='a', newline='') as csv_file:
+                    loss_writer = csv.writer(csv_file)
+                    if not file_exists:
+                        loss_writer.writerow(['iteration', 'train_loss', 'validation_loss', 'accuracy', 'norm_ED'])
+                    loss_writer.writerow([i, current_train_loss, current_valid_loss, current_accuracy, current_norm_ED])
+                
+                loss_avg.reset() # Reset train loss averager after logging
 
                 # show some predicted results
                 dashed_line = "-" * 80

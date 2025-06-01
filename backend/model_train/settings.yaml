@@ -8,19 +8,19 @@ network_params:
 image_height: 64
 image_width: 256
 rgb: false
-contrast_adjust: false
+contrast_adjust: true
 pad: true
 
 # Training parameters
 batch_size: 32
-num_iter: 10
-val_interval: 2
-workers: 2
+num_iter: 1000
+val_interval: 5
+workers: 10 
 grad_clip: 5.0
 
 # Dataset parameters
-train_data: "model_train/data/en_sample"
-valid_data: "model_train/data/en_sample"
+train_data: "model_train/train_data"
+valid_data: "model_train/validation_set"
 total_data_usage_ratio: 1.0
 data_filtering_off: false
 batch_max_length: 25
@@ -32,13 +32,14 @@ sequence_modeling: "BiLSTM"
 
 # Optimization
 optim: "adam"
-lr: 1.0
+lr: 1.0e-5
 rho: 0.95
 eps: 1.0e-8
+weight_decay: 1.0e-4
 
 # Model loading and saving
 saved_model: "model_train/model_checkpoints/english_1.pth"
-experiment_name: "test_finetune"
+experiment_name: "train_5"
 new_prediction: false
 finetune: true
 
