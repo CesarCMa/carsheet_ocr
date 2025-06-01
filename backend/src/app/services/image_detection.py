@@ -16,8 +16,16 @@ def detect_image(image: np.ndarray) -> List[Any]:
     """Detect text in an image."""
 
     pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    original_width, original_height = pil_image.size
+    
     upscaler = ImageUpscaler()
     upscaled_pil_image = upscaler.upscale(pil_image)
+    upscaled_width, upscaled_height = upscaled_pil_image.size
+    
+    # Calculate scaling factors
+    width_scale = original_width / upscaled_width
+    height_scale = original_height / upscaled_height
+    
     upscaled_image_np = cv2.cvtColor(np.array(upscaled_pil_image), cv2.COLOR_RGB2BGR)
 
     batch_img = np.expand_dims(upscaled_image_np, axis=0)
@@ -36,8 +44,18 @@ def detect_image(image: np.ndarray) -> List[Any]:
 
     recon_model = VGGRecognizer(lang_list=["en", "es"])
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
+    
+    # Scale back the coordinates to match original image dimensions
+    scaled_predictions = []
+    for coords, text in predictions:
+        scaled_coords = []
+        for point in coords:
+            x = int(point[0] * width_scale)
+            y = int(point[1] * height_scale)
+            scaled_coords.append([x, y])
+        scaled_predictions.append((scaled_coords, text))
 
     sheet_codes = pd.read_csv(CONFIG_PATH / "sheet_codes.csv")
-    descriptions = find_descriptions(predictions, sheet_codes)
+    descriptions = find_descriptions(scaled_predictions, sheet_codes)
 
-    return predictions, descriptions
+    return scaled_predictions, descriptions
