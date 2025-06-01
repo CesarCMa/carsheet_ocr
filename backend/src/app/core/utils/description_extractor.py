@@ -35,7 +35,7 @@ def convert_coords_to_int(coords):
         return None
     return [[int(point[0]), int(point[1])] for point in coords]
 
-def find_descriptions(detected_text_boxes, sheet_codes_df):
+def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
     """
     Find descriptions for the given codes based on proximity in the OCR results.
     
@@ -43,6 +43,8 @@ def find_descriptions(detected_text_boxes, sheet_codes_df):
     detected_text_boxes -- List of detected text boxes with format:
                           [([[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ['text', confidence])]
     sheet_codes_df -- DataFrame containing the codes and their descriptions
+    max_distance -- Maximum horizontal distance (in pixels) to consider when looking for descriptions.
+                   If None, no distance limit is applied.
     
     Returns:
     Dictionary mapping codes to a dict containing pred_index, description, code_coords, desc_coords, and code_name
@@ -114,6 +116,9 @@ def find_descriptions(detected_text_boxes, sheet_codes_df):
                 if y_difference < Y_TOLERANCE:
                     # Calculate horizontal distance
                     distance = box_center_x - code_center_x
+                    
+                    if max_distance is not None and distance > max_distance:
+                        continue
                     
                     # Update closest description if this one is closer
                     if distance < min_distance:

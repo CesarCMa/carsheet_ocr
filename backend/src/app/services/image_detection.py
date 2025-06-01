@@ -18,6 +18,9 @@ def detect_image(image: np.ndarray) -> List[Any]:
     pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     original_width, original_height = pil_image.size
     
+    # Calculate max_distance as 1/6 of the original image width
+    max_distance = original_width // 6
+    
     upscaler = ImageUpscaler()
     upscaled_pil_image = upscaler.upscale(pil_image)
     upscaled_width, upscaled_height = upscaled_pil_image.size
@@ -56,6 +59,6 @@ def detect_image(image: np.ndarray) -> List[Any]:
         scaled_predictions.append((scaled_coords, text))
 
     sheet_codes = pd.read_csv(CONFIG_PATH / "sheet_codes.csv")
-    descriptions = find_descriptions(scaled_predictions, sheet_codes)
+    descriptions = find_descriptions(scaled_predictions, sheet_codes, max_distance=max_distance)
 
     return scaled_predictions, descriptions
