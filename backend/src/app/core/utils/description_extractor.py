@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 # TODO: To mach codes, remove `.` from codes and predictions before matching
 # TODO: If prediction is a cofe with E + 1 or two digit number, replace E with F and match with that the code on target codes
@@ -137,3 +138,31 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
         }
     
     return {k.upper(): v for k, v in code_descriptions.items()}
+
+def plate_extractor(detected_text_boxes):
+    """
+    Extract the plate number from the detected text boxes.
+    Looks for a pattern of 4 numbers followed by 3 letters.
+    
+    Parameters:
+    detected_text_boxes -- List of detected text boxes with format:
+                          [([[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ['text', confidence])]
+    
+    Returns:
+    Dictionary containing the plate number and its coordinates if found, empty dict otherwise
+    """
+    plate_pattern = re.compile(r'^\d{4}[A-Za-z]{3}$')
+    
+    for box in detected_text_boxes:
+        text = box[1][0].strip()  # Get text and remove whitespace
+        
+        if plate_pattern.match(text):
+            return {
+                "matricula": {
+                    "description": text.upper(),
+                    "desc_coords": convert_coords_to_int(box[0]),
+                    "code_name": "matricula"
+                }
+            }
+    
+    return {}
