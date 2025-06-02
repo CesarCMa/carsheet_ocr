@@ -166,3 +166,65 @@ def plate_extractor(detected_text_boxes):
             }
     
     return {}
+
+def extract_certificate_code(detected_text_boxes):
+    """
+    Extract the certificate code from the detected text boxes.
+    Looks for text containing 'certificado' and then finds the closest text box
+    diagonally to the low-right of that box.
+    
+    Parameters:
+    detected_text_boxes -- List of detected text boxes with format:
+                          [([[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ['text', confidence])]
+    
+    Returns:
+    Dictionary containing the certificate code and its coordinates if found, empty dict otherwise
+    """
+    # First find the box containing "certificado"
+    certificado_box = None
+    for box in detected_text_boxes:
+        text = box[1][0].lower().strip()
+        if "certificado" in text:
+            certificado_box = box
+            break
+    
+    if not certificado_box:
+        return {}
+    
+    # Get the low-right corner coordinates of the certificado box
+    certificado_coords = certificado_box[0]
+    low_right_x = max(point[0] for point in certificado_coords)
+    low_right_y = max(point[1] for point in certificado_coords)
+    
+    # Find the closest text box diagonally to the low-right
+    closest_box = None
+    min_distance = float('inf')
+    
+    for box in detected_text_boxes:
+        # Skip the certificado box itself
+        if box == certificado_box:
+            continue
+            
+        box_coords = box[0]
+        box_center_x = sum(point[0] for point in box_coords) / 4
+        box_center_y = sum(point[1] for point in box_coords) / 4
+        
+        # Only consider boxes that are to the right and below the low-right corner
+        if box_center_x > low_right_x and box_center_y > low_right_y:
+            # Calculate diagonal distance using Euclidean distance
+            distance = ((box_center_x - low_right_x) ** 2 + (box_center_y - low_right_y) ** 2) ** 0.5
+            
+            if distance < min_distance:
+                min_distance = distance
+                closest_box = box
+    
+    if closest_box:
+        return {
+            "certificado": {
+                "description": closest_box[1][0].strip(),
+                "desc_coords": convert_coords_to_int(closest_box[0]),
+                "code_name": "certificado"
+            }
+        }
+    
+    return {}
