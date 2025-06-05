@@ -1,5 +1,6 @@
 from PIL import Image
 
+
 class ImageUpscaler:
     def __init__(self, target_max_size: int = 2500):
         """
@@ -54,7 +55,7 @@ class ImageUpscaler:
         # Ensure new dimensions are at least 1 to avoid errors with resize
         new_width = max(1, new_width)
         new_height = max(1, new_height)
-        
+
         # Using LANCZOS for high-quality resampling
         upscaled_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
         return upscaled_image

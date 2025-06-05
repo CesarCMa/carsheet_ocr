@@ -1,12 +1,18 @@
 """Main service for image detection."""
+
 import cv2
 import numpy as np
 from typing import List, Any
-
+from loguru import logger
 import pandas as pd
 from src.app.core.detection import CraftDetector, BoxMerger
 from src.app.core.recognition import VGGRecognizer
-from src.app.core.utils.description_extractor import find_descriptions, plate_extractor, extract_certificate_code, serialno_extractor
+from src.app.core.utils.description_extractor import (
+    find_descriptions,
+    plate_extractor,
+    extract_certificate_code,
+    serialno_extractor,
+)
 from src.app import CONFIG_PATH
 from PIL import Image
 from src.app.core.image_upscaler import ImageUpscaler
@@ -17,18 +23,19 @@ def detect_image(image: np.ndarray) -> List[Any]:
 
     pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     original_width, original_height = pil_image.size
-    
+
+    logger.info(f"Original image size: {original_width}x{original_height}")
     # Calculate max_distance as 1/6 of the original image width
     max_distance = original_width // 6
-    
+
     upscaler = ImageUpscaler()
     upscaled_pil_image = upscaler.upscale(pil_image)
     upscaled_width, upscaled_height = upscaled_pil_image.size
-    
+
     # Calculate scaling factors
     width_scale = original_width / upscaled_width
     height_scale = original_height / upscaled_height
-    
+
     upscaled_image_np = cv2.cvtColor(np.array(upscaled_pil_image), cv2.COLOR_RGB2BGR)
 
     batch_img = np.expand_dims(upscaled_image_np, axis=0)
@@ -47,7 +54,7 @@ def detect_image(image: np.ndarray) -> List[Any]:
 
     recon_model = VGGRecognizer(lang_list=["en", "es"])
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
-    
+
     # Scale back the coordinates to match original image dimensions
     scaled_predictions = []
     for coords, text in predictions:
@@ -59,7 +66,9 @@ def detect_image(image: np.ndarray) -> List[Any]:
         scaled_predictions.append((scaled_coords, text))
 
     sheet_codes = pd.read_csv(CONFIG_PATH / "sheet_codes.csv")
-    descriptions = find_descriptions(scaled_predictions, sheet_codes, max_distance=max_distance)
+    descriptions = find_descriptions(
+        scaled_predictions, sheet_codes, max_distance=max_distance
+    )
     plate = plate_extractor(scaled_predictions)
     plate.update(descriptions)
     certificate_code = extract_certificate_code(scaled_predictions)

@@ -88,7 +88,9 @@ class CTCLabelConverter:
             c = a & b
 
             # Gets the corresponding character according to the saved indexes
-            text = "".join([str(char) for char in np.array(self.character)[t[c.nonzero()]]])
+            text = "".join(
+                [str(char) for char in np.array(self.character)[t[c.nonzero()]]]
+            )
             texts.append(text)
             index += l
 

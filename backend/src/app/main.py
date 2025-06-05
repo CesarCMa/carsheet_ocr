@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from src.app.services.image_detection import detect_image as detect_image_service
 
+
 def convert_numpy_types(obj):
     if isinstance(obj, np.integer):
         return int(obj)
@@ -21,10 +22,11 @@ def convert_numpy_types(obj):
     else:
         return obj
 
+
 app = FastAPI(
     title="Carsheet OCR API",
     description="API for processing carsheet images using OCR",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 app.add_middleware(
@@ -35,13 +37,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to Carsheet OCR API"}
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 @app.post("/detect")
 async def detect_image(file: UploadFile = File(...)):
@@ -57,6 +62,6 @@ async def detect_image(file: UploadFile = File(...)):
             "status": "success",
             "message": "Image processed successfully",
             "predictions": predictions_serializable,
-            "code_descriptions": descriptions
+            "code_descriptions": descriptions,
         }
-    ) 
+    )
