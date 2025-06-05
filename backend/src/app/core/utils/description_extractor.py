@@ -1,4 +1,4 @@
-import numpy as np
+from loguru import logger
 import re
 
 
@@ -47,29 +47,24 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
     Returns:
     Dictionary mapping codes to a dict containing pred_index, description, code_coords, desc_coords, and code_name
     """
-    # Parameters to adjust
-    Y_TOLERANCE = 15  # Maximum vertical difference (in pixels) to consider boxes as being in the same row
+    Y_TOLERANCE = 15
     
-    # Initialize result dictionary
     code_descriptions = {}
     
-    # Process each code
     for _, row in sheet_codes_df.iterrows():
         target_code = row['code']
         target_code_lower = target_code.lower()
         target_code_normalized = normalize_code(target_code_lower)
         code_box_index = None
         
-        # Look for this code in the detected text boxes
         for i, box in enumerate(detected_text_boxes):
-            text = box[1][0].lower()  # Get text and convert to lowercase
+            text = box[1][0].lower()
             text_normalized = normalize_code(text)
             
             if text_normalized == target_code_normalized:
                 code_box_index = i
                 break
         
-        # If code was not found, add None to dictionary and continue to next code
         if code_box_index is None:
             code_descriptions[target_code] = {
                 "pred_index": None,
@@ -80,11 +75,9 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
             }
             continue
         
-        # Code was found, now find the closest text box to its right
         code_box = detected_text_boxes[code_box_index]
         code_coords = code_box[0]
         
-        # Calculate center point of the code box
         code_center_x = sum(point[0] for point in code_coords) / 4
         code_center_y = sum(point[1] for point in code_coords) / 4
         
@@ -93,39 +86,30 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
         closest_desc_coords = None
         min_distance = float('inf')
         
-        # Check each text box to find the closest one to the right
         for i, box in enumerate(detected_text_boxes):
-            # Skip if it's the same box as the code
             if i == code_box_index:
                 continue
                 
             box_coords = box[0]
             box_text = box[1][0]
             
-            # Calculate center point of this box
             box_center_x = sum(point[0] for point in box_coords) / 4
             box_center_y = sum(point[1] for point in box_coords) / 4
             
-            # Check if this box is to the right of the code box
             if box_center_x > code_center_x:
-                # Check if it's at approximately the same y-level (same row)
-                # Allow some flexibility in y-coordinate
                 y_difference = abs(box_center_y - code_center_y)
                 if y_difference < Y_TOLERANCE:
-                    # Calculate horizontal distance
                     distance = box_center_x - code_center_x
                     
                     if max_distance is not None and distance > max_distance:
                         continue
                     
-                    # Update closest description if this one is closer
                     if distance < min_distance:
                         min_distance = distance
                         closest_desc = box_text
                         closest_desc_index = i
                         closest_desc_coords = box_coords
         
-        # Add to result dictionary
         code_descriptions[target_code] = {
             "pred_index": closest_desc_index,
             "description": closest_desc,
@@ -151,7 +135,7 @@ def plate_extractor(detected_text_boxes):
     plate_pattern = re.compile(r'^\d{4}[A-Za-z]{3}$')
     
     for box in detected_text_boxes:
-        text = box[1][0].strip()  # Get text and remove whitespace
+        text = box[1][0].strip()
         
         if plate_pattern.match(text):
             return {
@@ -177,7 +161,6 @@ def extract_certificate_code(detected_text_boxes):
     Returns:
     Dictionary containing the certificate code and its coordinates if found, empty dict otherwise
     """
-    # First find the box containing "certificado"
     certificado_box = None
     for box in detected_text_boxes:
         text = box[1][0].lower().strip()
@@ -188,17 +171,14 @@ def extract_certificate_code(detected_text_boxes):
     if not certificado_box:
         return {}
     
-    # Get the low-right corner coordinates of the certificado box
     certificado_coords = certificado_box[0]
     low_right_x = max(point[0] for point in certificado_coords)
     low_right_y = max(point[1] for point in certificado_coords)
     
-    # Find the closest text box diagonally to the low-right
     closest_box = None
     min_distance = float('inf')
     
     for box in detected_text_boxes:
-        # Skip the certificado box itself
         if box == certificado_box:
             continue
             
@@ -206,9 +186,7 @@ def extract_certificate_code(detected_text_boxes):
         box_center_x = sum(point[0] for point in box_coords) / 4
         box_center_y = sum(point[1] for point in box_coords) / 4
         
-        # Only consider boxes that are to the right and below the low-right corner
         if box_center_x > low_right_x and box_center_y > low_right_y:
-            # Calculate diagonal distance using Euclidean distance
             distance = ((box_center_x - low_right_x) ** 2 + (box_center_y - low_right_y) ** 2) ** 0.5
             
             if distance < min_distance:
@@ -224,4 +202,71 @@ def extract_certificate_code(detected_text_boxes):
             }
         }
     
+    return {}
+
+def serialno_extractor(detected_text_boxes, max_distance=None):
+    """
+    Extract the serial number from the detected text boxes.
+    Looks for text containing 'de serie' and then finds the closest text box
+    to the right of that box within max_distance.
+    
+    Parameters:
+    detected_text_boxes -- List of detected text boxes with format:
+                          [([[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ['text', confidence])]
+    max_distance -- Maximum horizontal distance (in pixels) to consider when looking for the serial number.
+                   If None, no distance limit is applied.
+    
+    Returns:
+    Dictionary containing the serial number and its coordinates if found, empty dict otherwise
+    """
+    logger.info("Extracting serial number")
+    serie_box = None
+    for box in detected_text_boxes:
+        text = box[1][0].lower().strip()
+        if "de serie" in text:
+            serie_box = box
+            break
+    
+    if not serie_box:
+        logger.warning("No serie box found")
+        return {}
+    
+    serie_coords = serie_box[0]
+    right_x = max(point[0] for point in serie_coords)
+    center_y = sum(point[1] for point in serie_coords) / 4
+    
+    closest_box = None
+    min_distance = float('inf')
+    
+    for box in detected_text_boxes:
+        if box == serie_box:
+            continue
+            
+        box_coords = box[0]
+        box_center_x = sum(point[0] for point in box_coords) / 4
+        box_center_y = sum(point[1] for point in box_coords) / 4
+        
+        if box_center_x > right_x:
+            distance = box_center_x - right_x
+            
+            if max_distance is not None and distance > max_distance:
+                continue
+                
+            y_difference = abs(box_center_y - center_y)
+            if y_difference < 15:
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_box = box
+    
+    if closest_box:
+        logger.info(f"Serial number found: {closest_box[1][0].strip()}")
+        return {
+            "Nº de serie": {
+                "description": closest_box[1][0].strip(),
+                "desc_coords": convert_coords_to_int(closest_box[0]),
+                "code_name": "Nº de serie"
+            }
+        }
+    
+    logger.warning("No serial number found")
     return {}

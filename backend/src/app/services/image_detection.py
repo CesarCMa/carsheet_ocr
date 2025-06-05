@@ -6,7 +6,7 @@ from typing import List, Any
 import pandas as pd
 from src.app.core.detection import CraftDetector, BoxMerger
 from src.app.core.recognition import VGGRecognizer
-from src.app.core.utils.description_extractor import find_descriptions, plate_extractor, extract_certificate_code
+from src.app.core.utils.description_extractor import find_descriptions, plate_extractor, extract_certificate_code, serialno_extractor
 from src.app import CONFIG_PATH
 from PIL import Image
 from src.app.core.image_upscaler import ImageUpscaler
@@ -63,6 +63,8 @@ def detect_image(image: np.ndarray) -> List[Any]:
     plate = plate_extractor(scaled_predictions)
     plate.update(descriptions)
     certificate_code = extract_certificate_code(scaled_predictions)
-    plate.update(certificate_code)
+    certificate_code.update(plate)
+    serial_number = serialno_extractor(scaled_predictions)
+    serial_number.update(certificate_code)
 
-    return scaled_predictions, plate
+    return scaled_predictions, serial_number
