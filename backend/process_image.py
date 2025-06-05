@@ -2,7 +2,7 @@
 import pickle
 import cv2
 import numpy as np
-from src.app.services.image_detection import detect_image
+from app.services.image_detection import detect_image
 import matplotlib.pyplot as plt
 
 # %%

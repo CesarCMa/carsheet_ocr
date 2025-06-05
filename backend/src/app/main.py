@@ -3,7 +3,7 @@ import numpy as np
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from src.app.services.image_detection import detect_image as detect_image_service
+from app.services.image_detection import detect_image as detect_image_service
 
 
 def convert_numpy_types(obj):
