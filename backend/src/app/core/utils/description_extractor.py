@@ -49,6 +49,7 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
     Returns:
     Dictionary mapping codes to a dict containing pred_index, description, code_coords, desc_coords, and code_name
     """
+    logger.info("Extracting descriptions")
     Y_TOLERANCE = 15
 
     code_descriptions = {}
@@ -119,6 +120,10 @@ def find_descriptions(detected_text_boxes, sheet_codes_df, max_distance=None):
             "desc_coords": convert_coords_to_int(closest_desc_coords),
             "code_name": row["description"] if "description" in row else None,
         }
+    
+    found_descriptions = sum(1 for v in code_descriptions.values() if v["description"] is not None)
+    total_codes = len(code_descriptions)
+    logger.info(f"Found {found_descriptions} descriptions out of {total_codes} codes")
 
     return {k.upper(): v for k, v in code_descriptions.items()}
 

@@ -25,16 +25,18 @@ def detect_image(image: np.ndarray) -> List[Any]:
     original_width, original_height = pil_image.size
 
     logger.info(f"Original image size: {original_width}x{original_height}")
-    # Calculate max_distance as 1/6 of the original image width
     max_distance = original_width // 6
+    logger.info(f"Max distance for description extraction: {max_distance}")
 
     upscaler = ImageUpscaler()
     upscaled_pil_image = upscaler.upscale(pil_image)
     upscaled_width, upscaled_height = upscaled_pil_image.size
+    logger.info(f"Upscaled image size: {upscaled_width}x{upscaled_height}")
 
     # Calculate scaling factors
     width_scale = original_width / upscaled_width
     height_scale = original_height / upscaled_height
+    logger.info(f"Width scale: {width_scale}, Height scale: {height_scale}")
 
     upscaled_image_np = cv2.cvtColor(np.array(upscaled_pil_image), cv2.COLOR_RGB2BGR)
 
@@ -55,7 +57,6 @@ def detect_image(image: np.ndarray) -> List[Any]:
     recon_model = VGGRecognizer(lang_list=["en", "es"])
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
 
-    # Scale back the coordinates to match original image dimensions
     scaled_predictions = []
     for coords, text in predictions:
         scaled_coords = []
