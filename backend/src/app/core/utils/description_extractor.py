@@ -1,9 +1,6 @@
 import numpy as np
 import re
 
-# TODO: To mach codes, remove `.` from codes and predictions before matching
-# TODO: If prediction is a cofe with E + 1 or two digit number, replace E with F and match with that the code on target codes
-# TODO: if code is 0 + 1 or 2 digit number, replace 0 with o and match with that the code on target codes
 
 def normalize_code(code):
     """

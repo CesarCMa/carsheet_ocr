@@ -44,27 +44,15 @@ class CraftDetector:
         )
         self.device = device
 
-    # TODO: Clean up unused arguments
     def detect(
         self,
         image_batch: np.ndarray,
-        min_size: int = 20,
         text_threshold: float = 0.7,
         low_text: float = 0.4,
         link_threshold: float = 0.4,
         max_img_size: int = 2560,
         mag_ratio: float = 1.0,
         estimate_num_chars: bool = False,
-        slope_ths: float = 0.1,
-        ycenter_ths: float = 0.5,
-        height_ths: float = 0.5,
-        width_ths: float = 0.5,
-        add_margin: float = 0.1,
-        optimal_num_chars: Optional[int] = None,
-        threshold: float = 0.2,
-        bbox_min_score: float = 0.2,
-        bbox_min_size: int = 3,
-        max_candidates: int = 0,
     ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
         """
         Detect text regions in an batch of images.
