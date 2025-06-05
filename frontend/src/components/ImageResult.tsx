@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import './ImageResult.css';
 
 // Define a type for a single prediction item
@@ -138,6 +139,27 @@ const ImageResult: React.FC<ImageResultProps> = ({
     }
   };
 
+  const handleDownloadExcel = () => {
+    if (!detectionResult || 'error' in detectionResult || !detectionResult.code_descriptions) {
+      return;
+    }
+
+    // Prepare data for Excel
+    const data = Object.entries(detectionResult.code_descriptions).map(([code, prediction]) => ({
+      Code: code,
+      'Code Name': prediction.code_name,
+      'Description': editableDescriptions[code] || prediction.description
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'OCR Results');
+
+    // Generate Excel file
+    XLSX.writeFile(wb, 'ocr_results.xlsx');
+  };
+
   // Display error message if detection failed
   if (detectionResult && 'error' in detectionResult) {
     return (
@@ -181,7 +203,15 @@ const ImageResult: React.FC<ImageResultProps> = ({
 
       {!isLoading && detectionResult && !('error' in detectionResult) && detectionResult.code_descriptions && (
         <div className="detection-results-table">
-          <h3>Detected Codes and Descriptions</h3>
+          <div className="table-header">
+            <h3>Detected Codes and Descriptions</h3>
+            <button
+              onClick={handleDownloadExcel}
+              className="download-button action-button"
+            >
+              Download Excel
+            </button>
+          </div>
           <table>
             <thead>
               <tr>
