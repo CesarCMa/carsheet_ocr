@@ -6,9 +6,9 @@ class BoxMerger:
     def __init__(
         self,
         slope_ths: float = 0.1,
-        ycenter_ths: float = 0.5,
-        height_ths: float = 0.5,
-        width_ths: float = 1.0,
+        ycenter_ths: float = 0.3,
+        height_ths: float = 0.3,
+        width_ths: float = 1.5,
         add_margin: float = 0.05,
         min_size: Optional[int] = None,
     ):

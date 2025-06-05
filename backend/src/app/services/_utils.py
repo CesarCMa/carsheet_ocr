@@ -12,7 +12,7 @@ def log_score_maps(
     logs_path: Path,
 ) -> None:
     """Save text and link score maps as heatmaps.
-    
+
     Args:
         text_score: Text score array from the detector
         link_score: Link score array from the detector
@@ -20,13 +20,13 @@ def log_score_maps(
     """
     text_score_norm = cv2.normalize(text_score, None, 0, 255, cv2.NORM_MINMAX)
     link_score_norm = cv2.normalize(link_score, None, 0, 255, cv2.NORM_MINMAX)
-    
+
     text_score_norm = text_score_norm.astype(np.uint8)
     link_score_norm = link_score_norm.astype(np.uint8)
-    
+
     text_score_heatmap = cv2.applyColorMap(text_score_norm, cv2.COLORMAP_JET)
     link_score_heatmap = cv2.applyColorMap(link_score_norm, cv2.COLORMAP_JET)
-    
+
     cv2.imwrite(str(logs_path / "text_score.jpg"), text_score_heatmap)
     cv2.imwrite(str(logs_path / "link_score.jpg"), link_score_heatmap)
 
@@ -39,7 +39,7 @@ def log_detected_text_boxes(
     thickness: int = 2,
 ) -> None:
     """Save an image with detected text boxes drawn on it.
-    
+
     Args:
         image: Original image to draw boxes on
         boxes: Array of detected text boxes
@@ -62,7 +62,7 @@ def log_merged_boxes(
     thickness: int = 2,
 ) -> None:
     """Save an image with merged text boxes drawn on it.
-    
+
     Args:
         image: Original image to draw boxes on
         merged_boxes: List of merged boxes in format [x_min, x_max, y_min, y_max]
@@ -88,7 +88,7 @@ def log_predictions_over_image(
     text_thickness: int = 2,
 ) -> None:
     """Save an image with predicted text boxes and their recognized text.
-    
+
     Args:
         image: Original image to draw predictions on
         predictions: List of tuples containing (coordinates, text) for each prediction
@@ -103,16 +103,16 @@ def log_predictions_over_image(
     for coords, text in predictions:
         coords = np.array(coords).astype(np.int32).reshape((-1, 1, 2))
         cv2.polylines(pred_img, [coords], True, box_color, box_thickness)
-        
+
         x, y = coords[0][0]
         text_str = str(text[0]) if text is not None else ""
         cv2.putText(
             pred_img,
             text_str,
-            (x, y-10),
+            (x, y - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
             text_scale,
             text_color,
-            text_thickness
+            text_thickness,
         )
     cv2.imwrite(str(logs_path / "predictions.jpg"), pred_img)

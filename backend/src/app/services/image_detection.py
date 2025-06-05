@@ -27,11 +27,11 @@ from app.services._utils import (
 
 def detect_image(
     image: np.ndarray,
-    debug_mode: bool = False,
+    debug_mode: bool = True,
     logs_path: Optional[Path] = None,
 ) -> List[Any]:
     """Detect text in an image.
-    
+
     Args:
         image: Input image as numpy array
         debug_mode: If True, saves intermediate processing images
@@ -62,13 +62,8 @@ def detect_image(
     logger.info(f"Width scale: {width_scale}, Height scale: {height_scale}")
 
     upscaled_image_np = cv2.cvtColor(np.array(upscaled_pil_image), cv2.COLOR_RGB2BGR)
-    gray_img = cv2.cvtColor(upscaled_image_np, cv2.COLOR_BGR2GRAY)
-
-    if debug_mode:
-        cv2.imwrite(str(logs_path / "grayscale_image.jpg"), gray_img)
 
     batch_img = np.expand_dims(upscaled_image_np, axis=0)
-    gray_img = cv2.cvtColor(upscaled_image_np, cv2.COLOR_BGR2GRAY)
 
     detector = CraftDetector(device="cpu", quantized=False, cudnn_benchmark=False)
     boxes_batch, text_score_batch, link_score_batch = detector.detect(
@@ -81,7 +76,6 @@ def detect_image(
     if debug_mode:
         log_score_maps(text_score_batch[0], link_score_batch[0], logs_path)
         log_detected_text_boxes(upscaled_image_np, boxes_batch[0], logs_path)
-        
 
     box_merger = BoxMerger()
     merged_list, free_list = box_merger.merge_text_boxes(boxes_batch[0])
@@ -90,6 +84,12 @@ def detect_image(
         log_merged_boxes(upscaled_image_np, merged_list, logs_path)
 
     recon_model = VGGRecognizer(lang_list=["en", "es"])
+
+    gray_img = cv2.cvtColor(upscaled_image_np, cv2.COLOR_BGR2GRAY)
+
+    if debug_mode:
+        cv2.imwrite(str(logs_path / "grayscale_image.jpg"), gray_img)
+
     predictions = recon_model.recognize(gray_img, merged_list, batch_size=10)
 
     if debug_mode:
