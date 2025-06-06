@@ -83,7 +83,7 @@ def load_model(model_path, train_settings, device):
     return model, converter
 
 
-def evaluate_model(model, evaluation_loader, converter, train_settings, device):
+def evaluate_model(model, evaluation_loader, converter , device):
     n_correct = 0
     norm_ED = 0
     length_of_data = 0
@@ -91,19 +91,13 @@ def evaluate_model(model, evaluation_loader, converter, train_settings, device):
     valid_loss_avg = Averager()
     criterion = torch.nn.CTCLoss(zero_infinity=True).to(device)
     all_predictions = []  # Store predictions for comparison
+    exact_matches = 0  # Count of exact matches
+    partial_matches = 0  # Count of partial matches (some characters match)
 
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
         batch_size = image_tensors.size(0)
         length_of_data = length_of_data + batch_size
         image = image_tensors.to(device)
-        length_for_pred = torch.IntTensor(
-            [train_settings["batch_max_length"]] * batch_size
-        ).to(device)
-        text_for_pred = (
-            torch.LongTensor(batch_size, train_settings["batch_max_length"] + 1)
-            .fill_(0)
-            .to(device)
-        )
 
         text_for_loss, length_for_loss = converter.encode(labels)
 
@@ -147,8 +141,15 @@ def evaluate_model(model, evaluation_loader, converter, train_settings, device):
             gt_lower = gt.lower()
             pred_lower = pred.lower()
 
+            # Check for exact match
             if pred_lower == gt_lower:
                 n_correct += 1
+                exact_matches += 1
+            else:
+                # Check for partial match (some characters match)
+                common_chars = set(gt_lower) & set(pred_lower)
+                if len(common_chars) > 0:
+                    partial_matches += 1
 
             if len(gt_lower) == 0 or len(pred_lower) == 0:
                 norm_ED += 0
@@ -178,7 +179,11 @@ def evaluate_model(model, evaluation_loader, converter, train_settings, device):
         "infer_time": infer_time,
         "samples": length_of_data,
         "valid_loss": valid_loss_avg.val(),
-        "predictions": all_predictions,  # Return predictions for comparison
+        "predictions": all_predictions,
+        "exact_matches": exact_matches,
+        "partial_matches": partial_matches,
+        "exact_match_rate": (exact_matches / float(length_of_data)) * 100,
+        "partial_match_rate": (partial_matches / float(length_of_data)) * 100
     }
 
 
@@ -239,36 +244,42 @@ def main():
     # Evaluate models
     print("\nEvaluating Base Model...")
     base_results = evaluate_model(
-        base_model, valid_loader, base_converter, train_settings, device
+        base_model, valid_loader, base_converter, device
     )
 
     print("\nEvaluating Tuned Model...")
     tuned_results = evaluate_model(
-        tuned_model, valid_loader, tuned_converter, train_settings, device
+        tuned_model, valid_loader, tuned_converter, device
     )
 
     # Print comparison
     print("\n=== Model Comparison Results ===")
-    print(f"{'Metric':<15} {'Base Model':<15} {'Tuned Model':<15} {'Improvement':<15}")
-    print("-" * 60)
+    print(f"{'Metric':<20} {'Base Model':<15} {'Tuned Model':<15} {'Improvement':<15}")
+    print("-" * 65)
 
-    metrics = ["accuracy", "norm_ED", "avg_confidence", "infer_time", "valid_loss"]
+    metrics = [
+        "accuracy", "norm_ED", "avg_confidence", "infer_time", "valid_loss",
+        "exact_match_rate", "partial_match_rate"
+    ]
     for metric in metrics:
         base_val = base_results[metric]
         tuned_val = tuned_results[metric]
         diff = tuned_val - base_val
-        print(f"{metric:<15} {base_val:<15.4f} {tuned_val:<15.4f} {diff:<15.4f}")
+        print(f"{metric:<20} {base_val:<15.4f} {tuned_val:<15.4f} {diff:<15.4f}")
 
     print(f"\nTotal samples evaluated: {base_results['samples']}")
+
+    # Create a dictionary of tuned predictions indexed by ground truth
+    tuned_predictions = {gt: pred for gt, pred in tuned_results["predictions"]}
 
     # Print predictions comparison table
     print("\n=== Predictions Comparison ===")
     print(f"{'Ground Truth':<30} | {'Base Model':<30} | {'Tuned Model':<30}")
     print("-" * 95)
 
-    for (gt, base_pred), (_, tuned_pred) in zip(
-        base_results["predictions"], tuned_results["predictions"]
-    ):
+    # Print predictions in order of base results, matching with tuned results
+    for gt, base_pred in base_results["predictions"]:
+        tuned_pred = tuned_predictions.get(gt, "NOT FOUND")
         print(f"{gt:<30} | {base_pred:<30} | {tuned_pred:<30}")
 
     # Print training parameters used
