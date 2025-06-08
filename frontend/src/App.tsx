@@ -33,6 +33,8 @@ function App() {
   const [croppedImage, setCroppedImage] = useState<string | null>(null)
   const [rotatedImageDataUrl, setRotatedImageDataUrl] = useState<string | null>(null)
   const [stage, setStage] = useState<Stage>('uploading')
+  const [detectionResult, setDetectionResult] = useState<any | null>(null); // State for API response
+  const [isLoading, setIsLoading] = useState(false); // State for loading indicator
 
   const imageRef = useRef<HTMLImageElement>(null)
   const rotatedImageRef = useRef<HTMLImageElement>(null)
@@ -93,7 +95,62 @@ function App() {
     setStage('cropping'); // Move to cropping stage
   };
 
-  const handleCropImage = () => {
+  // Helper function to convert data URL to Blob
+  const dataURLtoBlob = (dataurl: string): Blob | null => {
+      const arr = dataurl.split(',');
+      const match = arr[0].match(/:(.*?);/);
+      if (!match) return null;
+      const mime = match[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while(n--){
+          u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], {type:mime});
+  }
+
+  // Function to call the backend API
+  const callDetectAPI = async (imageDataUrl: string) => {
+    const blob = dataURLtoBlob(imageDataUrl);
+    if (!blob) {
+        console.error("Failed to convert data URL to Blob.");
+        setDetectionResult({ error: "Failed to process image before sending." });
+        return;
+    }
+
+    const formData = new FormData();
+    // Use a generic filename, the backend should handle it based on content type
+    formData.append('file', blob, 'image.jpg');
+
+    setIsLoading(true);
+    setDetectionResult(null); // Clear previous results
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/detect', {
+            method: 'POST',
+            body: formData,
+            // Headers might not be needed if the server correctly handles multipart/form-data
+            // headers: { 'Content-Type': 'multipart/form-data' } // Fetch usually sets this automatically for FormData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        setDetectionResult(result);
+
+    } catch (error) {
+        console.error("Error calling detect API:", error);
+        setDetectionResult({ error: `Failed to fetch detection results: ${error}` });
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  // --- Modified handleCropImage that calls the API ---
+  const handleCropImageAndDetect = () => {
     const imageToCrop = rotatedImageRef.current;
 
     if (!imageToCrop || !rotatedImageDataUrl || !crop.width || !crop.height) {
@@ -108,68 +165,44 @@ function App() {
       return;
     }
 
-    // We need the *natural* dimensions of the rotated image data URL
-    // Load it into a temporary image object to get these
     const tempImg = new Image();
     tempImg.onload = () => {
       const naturalWidth = tempImg.naturalWidth;
       const naturalHeight = tempImg.naturalHeight;
-
-       // Determine scale factors between displayed image size and its natural size
       const scaleX = naturalWidth / imageToCrop.width;
       const scaleY = naturalHeight / imageToCrop.height;
 
-      // Calculate crop dimensions in terms of natural image pixels
-      let cropX = 0;
-      let cropY = 0;
-      let cropWidth = 0;
-      let cropHeight = 0;
-
-      // Adjust calculation based on crop unit ('%' or 'px')
+      let cropX = 0, cropY = 0, cropWidth = 0, cropHeight = 0;
       if (crop.unit === '%') {
           cropX = (crop.x / 100) * naturalWidth;
           cropY = (crop.y / 100) * naturalHeight;
           cropWidth = (crop.width / 100) * naturalWidth;
           cropHeight = (crop.height / 100) * naturalHeight;
-      } else { // Assuming unit is 'px'
+      } else {
           cropX = crop.x * scaleX;
           cropY = crop.y * scaleY;
           cropWidth = crop.width * scaleX;
           cropHeight = crop.height * scaleY;
       }
 
-       // Ensure calculated dimensions are positive
-       if (cropWidth <= 0 || cropHeight <= 0) {
-            console.error("Calculated zero or negative crop dimensions:", { cropWidth, cropHeight });
-            return;
-       }
+      if (cropWidth <= 0 || cropHeight <= 0) {
+           console.error("Calculated zero or negative crop dimensions:", { cropWidth, cropHeight });
+           return;
+      }
 
-      // Set the final canvas size to the target crop size
       canvas.width = cropWidth;
       canvas.height = cropHeight;
 
-      // Draw the *cropped section* of the rotated image onto the canvas
-      // No rotation needed here as the source image is already rotated
-      ctx.drawImage(
-        tempImg, // Use the temporary image with natural dimensions
-        cropX,
-        cropY,
-        cropWidth,
-        cropHeight,
-        0, // Destination x on canvas
-        0, // Destination y on canvas
-        cropWidth, // Destination width on canvas
-        cropHeight // Destination height on canvas
-      );
+      ctx.drawImage(tempImg, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-      // Get the final cropped image data URL
       try {
-        const dataUrl = canvas.toDataURL('image/jpeg');
+        const dataUrl = canvas.toDataURL('image/jpeg'); // Use JPEG for potentially smaller size
         if (dataUrl === 'data:,') {
           console.error("Generated empty data URL during final crop.");
         } else {
           setCroppedImage(dataUrl);
           setStage('displaying'); // Move to display stage
+          callDetectAPI(dataUrl); // <<< Call the API here
         }
       } catch (e) {
         console.error("Error generating final cropped data URL:", e);
@@ -178,12 +211,14 @@ function App() {
     tempImg.onerror = () => {
         console.error("Failed to load rotated image data for cropping.");
     };
-    tempImg.src = rotatedImageDataUrl; // Start loading the rotated image data
+    tempImg.src = rotatedImageDataUrl;
   };
 
   const handleEditAgain = () => {
       setCroppedImage(null);
       setRotatedImageDataUrl(null); // Clear rotated image too
+      setDetectionResult(null); // Clear detection results
+      setIsLoading(false); // Reset loading state
       setRotation(0);
       setCrop(createDefaultCrop());
       setStage('rotating'); // Go back to rotating the original image
@@ -221,17 +256,19 @@ function App() {
             rotatedImageDataUrl={rotatedImageDataUrl}
             crop={crop}
             onCropChange={handleCropChange}
-            onCropImage={handleCropImage}
+            onCropImage={handleCropImageAndDetect} // <<< Use the new handler
             rotatedImageRef={rotatedImageRef}
           />
         )}
 
 
         {/* Stage: Displaying Result */}
-        {stage === 'displaying' && croppedImage && (
+        {stage === 'displaying' && (croppedImage || isLoading) && ( // Show if loading or has image
           <ImageResult
             croppedImage={croppedImage}
             onEditAgain={handleEditAgain}
+            isLoading={isLoading} // Pass loading state
+            detectionResult={detectionResult} // Pass detection result
           />
         )}
 
