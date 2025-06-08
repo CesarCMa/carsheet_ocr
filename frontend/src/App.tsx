@@ -226,7 +226,12 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>Car Sheet OCR</h1>
+      <nav className="navbar">
+        <div className="navbar-brand">FichaScan</div>
+        <div className="navbar-credit">
+          Developed by <a href="https://github.com/CesarCMa" target="_blank" rel="noopener noreferrer">CesarCMa</a>
+        </div>
+      </nav>
       <div className="upload-container">
         <label htmlFor="image-upload" className="upload-button">
           {image ? 'Change Image' : 'Upload Image'}

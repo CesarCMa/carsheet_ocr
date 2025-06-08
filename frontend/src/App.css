@@ -44,8 +44,46 @@
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.navbar-credit {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.navbar-credit a {
+  color: #2196F3;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.navbar-credit a:hover {
+  color: #1976D2;
 }
 
 h1 {
@@ -55,10 +93,12 @@ h1 {
 }
 
 .upload-container {
+  margin-top: 80px; /* Add margin to account for fixed navbar */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+  padding: 2rem;
 }
 
 .upload-button {
