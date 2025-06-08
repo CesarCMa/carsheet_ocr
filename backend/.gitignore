@@ -43,3 +43,4 @@ uploads/
 models/*
 model_train/data/*
 saved_models/
+logs/

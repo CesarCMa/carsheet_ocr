@@ -24,9 +24,9 @@ def adjust_contrast_grey(img, target=0.4):
         img = img.astype(int)
         ratio = 200.0 / (high - low)
         img = (img - low + 25) * ratio
-        img = np.maximum(np.full(img.shape, 0), np.minimum(np.full(img.shape, 255), img)).astype(
-            np.uint8
-        )
+        img = np.maximum(
+            np.full(img.shape, 0), np.minimum(np.full(img.shape, 255), img)
+        ).astype(np.uint8)
     return img
 
 
@@ -36,7 +36,9 @@ class Batch_Balanced_Dataset(object):
         """
         Creates a dataset loader for a single dataset.
         """
-        log_path = f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt"
+        log_path = (
+            f"./saved_models/{training_settings['experiment_name']}/log_dataset.txt"
+        )
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         log = open(log_path, "a")
 
@@ -47,23 +49,25 @@ class Batch_Balanced_Dataset(object):
         log.write(f"dataset_root: {training_settings['train_data']}\n")
 
         _AlignCollate = AlignCollate(
-            imgH=training_settings['image_height'],
-            imgW=training_settings['image_width'],
-            keep_ratio_with_pad=training_settings['pad'],
-            contrast_adjust=training_settings['contrast_adjust'],
+            imgH=training_settings["image_height"],
+            imgW=training_settings["image_width"],
+            keep_ratio_with_pad=training_settings["pad"],
+            contrast_adjust=training_settings["contrast_adjust"],
         )
 
         # Create dataset for the single directory
         _dataset, _dataset_log = hierarchical_dataset(
-            root=training_settings['train_data'], 
-            training_settings=training_settings, 
-            select_data=['/']
+            root=training_settings["train_data"],
+            training_settings=training_settings,
+            select_data=["/"],
         )
         total_number_dataset = len(_dataset)
         log.write(_dataset_log)
 
         # Apply data usage ratio if specified
-        number_dataset = int(total_number_dataset * float(training_settings['total_data_usage_ratio']))
+        number_dataset = int(
+            total_number_dataset * float(training_settings["total_data_usage_ratio"])
+        )
         dataset_split = [number_dataset, total_number_dataset - number_dataset]
         indices = range(total_number_dataset)
         _dataset, _ = [
@@ -74,9 +78,9 @@ class Batch_Balanced_Dataset(object):
         # Create data loader
         _data_loader = torch.utils.data.DataLoader(
             _dataset,
-            batch_size=training_settings['batch_size'],
+            batch_size=training_settings["batch_size"],
             shuffle=True,
-            num_workers=int(training_settings['workers']),
+            num_workers=int(training_settings["workers"]),
             collate_fn=_AlignCollate,
             pin_memory=True,
         )
@@ -145,14 +149,14 @@ class OCRDataset(Dataset):
         )
         self.nSamples = len(self.df)
 
-        if self.training_settings['data_filtering_off']:
+        if self.training_settings["data_filtering_off"]:
             self.filtered_index_list = [index + 1 for index in range(self.nSamples)]
         else:
             self.filtered_index_list = []
             for index in range(self.nSamples):
                 label = self.df.at[index, "words"]
                 try:
-                    if len(label) > self.training_settings['batch_max_length']:
+                    if len(label) > self.training_settings["batch_max_length"]:
                         continue
                 except:
                     logger.error(label)
@@ -171,7 +175,7 @@ class OCRDataset(Dataset):
         img_fpath = os.path.join(self.root, img_fname)
         label = self.df.at[index, "words"]
 
-        if self.training_settings['rgb']:
+        if self.training_settings["rgb"]:
             img = Image.open(img_fpath).convert("RGB")  # for color image
         else:
             img = Image.open(img_fpath).convert("L")
@@ -214,14 +218,18 @@ class NormalizePAD(object):
         Pad_img = torch.FloatTensor(*self.max_size).fill_(0)
         Pad_img[:, :, :w] = img  # right pad
         if self.max_size[2] != w:  # add border Pad
-            Pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
+            Pad_img[:, :, w:] = (
+                img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
+            )
 
         return Pad_img
 
 
 class AlignCollate(object):
 
-    def __init__(self, imgH=32, imgW=100, keep_ratio_with_pad=False, contrast_adjust=0.0):
+    def __init__(
+        self, imgH=32, imgW=100, keep_ratio_with_pad=False, contrast_adjust=0.0
+    ):
         self.imgH = imgH
         self.imgW = imgW
         self.keep_ratio_with_pad = keep_ratio_with_pad

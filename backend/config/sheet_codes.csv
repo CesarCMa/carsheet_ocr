@@ -1,0 +1,57 @@
+code,description
+cl,clasificacion del vehiculo
+c.i,codigo itv
+c.v,control vin
+a.1,nombre fabricante vehiculo base
+a.2,direccion fabricante vehiculo base
+d.1,marca
+d.2,tipo/variante/version
+d.3,denominacion comercial del vehiculo
+e,numero identificacion del vehiculo
+j,categoria del vehiculo
+j.1,carroceria del vehiculo
+j.2,clase
+j.3,volumen de bodegas
+r,color
+d.6,procedencia
+k,numero homologacion vehiculo base
+z,año y numero de orden de la serie corta
+g,masa en orden de marcha
+f.1,masa maxima en carga tecnicamente admisible
+f.1.1,masa maxima en carga tecnicamente admisible en cada eje
+f.1.5,masa maxima en carga tecnicamente admisible en quinta rueda
+f.2,masa maxima en carga admisible del vehiculo en circulacion
+f.2.1,masa maxima autorizada en cada eje
+f.3,masa maxima tecnicamente admisible del conjunto
+f.3.1,masa maxima autorizada del conjunto
+o.1,masa remolcable con frenos
+o.1.1,barra de traccion
+o.1.2,semirremolque
+o.1.3,remolque eje central
+o.1.4,remolque sin freno
+f.4,altura total
+f.5,anchura total
+f.6,longitud total
+f.7,via anterior
+f.7.1,via posterior
+f.8,voladizo posterior
+m.1,distancia entre ejes
+m.4,distancia entre quinta rueda y ultimo eje
+l,numero de ejes y ruedas
+l.0,numero y posicion de ejes con ruedas gemelas
+l.1,ejes motrices
+l.2,dimensiones de los neumaticos
+p.5.1,fabricante o marca del motor
+p.5,codigo de identificacion del motor
+p.3,tipo de combustible
+p.1,cilindrada
+p.1.1,numero y disposicion de los cilindros
+p.2,potencia del motor 
+p.2.1,potencia fiscal
+s.1,numero de plazas de asiento
+s.2,numero de plazas de pie
+u.1,nivel sonoro en parado
+u.2,velocidad del motor a la que se mide el nuvel sonoro del vehiculo parado
+v.7,emisiones de co2
+v.9,nivel de emisiones
+

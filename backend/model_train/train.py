@@ -53,7 +53,9 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
     train_dataset = Batch_Balanced_Dataset(train_settings)
 
     log = open(
-        f"./saved_models/{train_settings['experiment_name']}/log_dataset.txt", "a", encoding="utf8"
+        f"./saved_models/{train_settings['experiment_name']}/log_dataset.txt",
+        "a",
+        encoding="utf8",
     )
     AlignCollate_valid = AlignCollate(
         imgH=train_settings["image_height"],
@@ -98,7 +100,8 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         pretrained_dict = torch.load(train_settings["saved_model"], map_location=device)
         if train_settings["new_prediction"]:
             model.Prediction = nn.Linear(
-                model.SequenceModeling_output, len(pretrained_dict["module.Prediction.weight"])
+                model.SequenceModeling_output,
+                len(pretrained_dict["module.Prediction.weight"]),
             )
 
         model = torch.nn.DataParallel(model).to(device)
@@ -108,7 +111,9 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         else:
             model.load_state_dict(pretrained_dict)
         if train_settings["new_prediction"]:
-            model.module.Prediction = nn.Linear(model.module.SequenceModeling_output, num_class)
+            model.module.Prediction = nn.Linear(
+                model.module.SequenceModeling_output, num_class
+            )
             for name, param in model.module.Prediction.named_parameters():
                 if "bias" in name:
                     init.constant_(param, 0.0)
@@ -168,7 +173,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
         optimizer = optim.Adam(
             filtered_parameters,
             lr=train_settings["lr"],
-            weight_decay=train_settings.get("weight_decay", 0)
+            weight_decay=train_settings.get("weight_decay", 0),
         )
     else:
         optimizer = optim.Adadelta(
@@ -182,7 +187,9 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
 
     """ final options """
     with open(
-        f"./saved_models/{train_settings['experiment_name']}/opt.txt", "a", encoding="utf8"
+        f"./saved_models/{train_settings['experiment_name']}/opt.txt",
+        "a",
+        encoding="utf8",
     ) as opt_file:
         opt_log = "------------ Options -------------\n"
         for k, v in train_settings.items():
@@ -223,12 +230,16 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 preds_size = torch.IntTensor([preds.size(1)] * batch_size)
                 preds = preds.permute(1, 0, 2)
                 torch.backends.cudnn.enabled = False
-                cost = criterion(preds, text.to(device), preds_size.to(device), length.to(device))
+                cost = criterion(
+                    preds, text.to(device), preds_size.to(device), length.to(device)
+                )
                 torch.backends.cudnn.enabled = True
 
             scaler.scale(cost).backward()
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings["grad_clip"])
+            torch.nn.utils.clip_grad_norm_(
+                model.parameters(), train_settings["grad_clip"]
+            )
             scaler.step(optimizer)
             scaler.update()
         else:
@@ -241,11 +252,15 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
             preds_size = torch.IntTensor([preds.size(1)] * batch_size)
             preds = preds.permute(1, 0, 2)
             torch.backends.cudnn.enabled = False
-            cost = criterion(preds, text.to(device), preds_size.to(device), length.to(device))
+            cost = criterion(
+                preds, text.to(device), preds_size.to(device), length.to(device)
+            )
             torch.backends.cudnn.enabled = True
 
             cost.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), train_settings["grad_clip"])
+            torch.nn.utils.clip_grad_norm_(
+                model.parameters(), train_settings["grad_clip"]
+            )
             optimizer.step()
         loss_avg.add(cost)
 
@@ -272,7 +287,12 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                         infer_time,
                         length_of_data,
                     ) = validation(
-                        model, criterion, valid_loader, converter, train_settings, device
+                        model,
+                        criterion,
+                        valid_loader,
+                        converter,
+                        train_settings,
+                        device,
                     )
                 model.train()
 
@@ -302,23 +322,39 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                 log.write(loss_model_log + "\n")
 
                 # CSV Logging of losses
-                experiment_name = train_settings['experiment_name']
+                experiment_name = train_settings["experiment_name"]
                 saved_models_dir = f"./saved_models/{experiment_name}/"
                 csv_file_path = os.path.join(saved_models_dir, "losses_log.csv")
                 # Ensure directory exists, though it should have been created for opt.txt and log_dataset.txt
-                os.makedirs(saved_models_dir, exist_ok=True) 
+                os.makedirs(saved_models_dir, exist_ok=True)
 
                 file_exists = os.path.isfile(csv_file_path)
                 current_train_loss = loss_avg.val().item()
                 current_valid_loss = valid_loss.item()
 
-                with open(csv_file_path, mode='a', newline='') as csv_file:
+                with open(csv_file_path, mode="a", newline="") as csv_file:
                     loss_writer = csv.writer(csv_file)
                     if not file_exists:
-                        loss_writer.writerow(['iteration', 'train_loss', 'validation_loss', 'accuracy', 'norm_ED'])
-                    loss_writer.writerow([i, current_train_loss, current_valid_loss, current_accuracy, current_norm_ED])
-                
-                loss_avg.reset() # Reset train loss averager after logging
+                        loss_writer.writerow(
+                            [
+                                "iteration",
+                                "train_loss",
+                                "validation_loss",
+                                "accuracy",
+                                "norm_ED",
+                            ]
+                        )
+                    loss_writer.writerow(
+                        [
+                            i,
+                            current_train_loss,
+                            current_valid_loss,
+                            current_accuracy,
+                            current_norm_ED,
+                        ]
+                    )
+
+                loss_avg.reset()  # Reset train loss averager after logging
 
                 # show some predicted results
                 dashed_line = "-" * 80
@@ -333,9 +369,7 @@ def train(train_settings: dict, show_number=2, AutoMixPrecision=False):
                     preds[start : start + show_number],
                     confidence_score[start : start + show_number],
                 ):
-                    predicted_result_log += (
-                        f"{gt:25s} | {pred:25s} | {confidence:0.4f}\t{str(pred == gt)}\n"
-                    )
+                    predicted_result_log += f"{gt:25s} | {pred:25s} | {confidence:0.4f}\t{str(pred == gt)}\n"
 
                 predicted_result_log += f"{dashed_line}"
                 logger.info(predicted_result_log)
