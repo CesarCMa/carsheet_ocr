@@ -28,7 +28,8 @@ class VGGRecognizer:
         self._model_config = file.load_model_config(
             "english_vgg", CONFIG_PATH / "recognition_models.yaml"
         )
-        file.download_pretrained_model(self._model_config)
+        if self._model_config["source"] == "repo":
+            file.download_pretrained_model(self._model_config)
         self.vgg_model = _load_model(
             self._model_config,
             device,
