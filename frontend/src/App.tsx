@@ -232,52 +232,67 @@ function App() {
           Developed by <a href="https://github.com/CesarCMa" target="_blank" rel="noopener noreferrer">CesarCMa</a>
         </div>
       </nav>
-      <div className="upload-container">
-        <label htmlFor="image-upload" className="upload-button">
-          {image ? 'Change Image' : 'Upload Image'}
-        </label>
-        <input
-          id="image-upload"
-          type="file"
-          accept="image/jpeg,image/png"
-          onChange={handleImageUpload}
-          style={{ display: 'none' }}
-        />
 
-        {/* Stage: Rotating */}
-        {stage === 'rotating' && image && (
-          <ImageRotator
-            image={image}
-            rotation={rotation}
-            onRotate={handleRotate}
-            onAcceptRotation={handleAcceptRotation}
-            imageRef={imageRef}
-          />
-        )}
+      {stage === 'uploading' ? (
+        <div className="main-grid">
+          <div className="main-left">
+            <h2 className="main-header">Convierte tus fichas técncas a excel!</h2>
+            <p className="main-subtitle">FichaScan te permite escanear fichas técnicas de vehículos y convertirlas a excel 🪄</p>
+            <div className="main-upload-btn-container">
+              <label htmlFor="image-upload" className="upload-button">
+                Escanear Ficha
+              </label>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/jpeg,image/png"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+            </div>
+            <div className="main-warning">
+              Actualmente sólo soportamos fichas técnicas electrónicas (posteriores a 2016)
+            </div>
+          </div>
+          <div className="main-right">
+            <img src="/main_page_pic.png" alt="Ejemplo ficha técnica a excel" className="main-page-image" />
+          </div>
+        </div>
+      ) : (
+        <div className="upload-container">
+          {/* Stage: Rotating */}
+          {stage === 'rotating' && image && (
+            <ImageRotator
+              image={image}
+              rotation={rotation}
+              onRotate={handleRotate}
+              onAcceptRotation={handleAcceptRotation}
+              imageRef={imageRef}
+            />
+          )}
 
-        {/* Stage: Cropping */}
-        {stage === 'cropping' && rotatedImageDataUrl && (
-          <ImageCropper
-            rotatedImageDataUrl={rotatedImageDataUrl}
-            crop={crop}
-            onCropChange={handleCropChange}
-            onCropImage={handleCropImageAndDetect} // <<< Use the new handler
-            rotatedImageRef={rotatedImageRef}
-          />
-        )}
+          {/* Stage: Cropping */}
+          {stage === 'cropping' && rotatedImageDataUrl && (
+            <ImageCropper
+              rotatedImageDataUrl={rotatedImageDataUrl}
+              crop={crop}
+              onCropChange={handleCropChange}
+              onCropImage={handleCropImageAndDetect}
+              rotatedImageRef={rotatedImageRef}
+            />
+          )}
 
-
-        {/* Stage: Displaying Result */}
-        {stage === 'displaying' && (croppedImage || isLoading) && ( // Show if loading or has image
-          <ImageResult
-            croppedImage={croppedImage}
-            onEditAgain={handleEditAgain}
-            isLoading={isLoading} // Pass loading state
-            detectionResult={detectionResult} // Pass detection result
-          />
-        )}
-
-      </div>
+          {/* Stage: Displaying Result */}
+          {stage === 'displaying' && (croppedImage || isLoading) && (
+            <ImageResult
+              croppedImage={croppedImage}
+              onEditAgain={handleEditAgain}
+              isLoading={isLoading}
+              detectionResult={detectionResult}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
