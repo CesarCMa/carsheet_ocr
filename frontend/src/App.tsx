@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import './App.css'
@@ -33,32 +33,11 @@ function App() {
   const [croppedImage, setCroppedImage] = useState<string | null>(null)
   const [rotatedImageDataUrl, setRotatedImageDataUrl] = useState<string | null>(null)
   const [stage, setStage] = useState<Stage>('uploading')
-  const [detectionResult, setDetectionResult] = useState<any | null>(null); // State for API response
-  const [isLoading, setIsLoading] = useState(false); // State for loading indicator
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const [detectionResult, setDetectionResult] = useState<any | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const imageRef = useRef<HTMLImageElement>(null)
   const rotatedImageRef = useRef<HTMLImageElement>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      if (currentScrollY > lastScrollY) {
-        // Scrolling down
-        setIsNavbarVisible(false)
-      } else {
-        // Scrolling up
-        setIsNavbarVisible(true)
-      }
-      
-      setLastScrollY(currentScrollY)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -247,7 +226,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <nav className={`navbar ${isNavbarVisible ? 'visible' : 'hidden'}`}>
+      <nav className="navbar">
         <div className="navbar-brand">FichaScan</div>
         <div className="navbar-credit">
           Desarrollado por <a href="https://github.com/CesarCMa" target="_blank" rel="noopener noreferrer">CesarCMa</a>
