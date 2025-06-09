@@ -2,6 +2,10 @@
   margin: 20px 0;
   width: 100%;
   max-width: 800px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .detection-results-table table {
@@ -52,6 +56,32 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
+  position: sticky;
+  top: 80px; /* Account for navbar height */
+  background-color: white;
+  z-index: 100;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-display-area .image-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.image-display-area img {
+  display: block;
+  max-width: 100%;
+  max-height: 500px;
+  margin: 0 auto;
+}
+
+.image-display-area canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
 }
 
 .loading-indicator {

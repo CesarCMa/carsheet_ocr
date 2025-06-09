@@ -134,6 +134,7 @@ const ImageResult: React.FC<ImageResultProps> = ({
     const canvas = canvasRef.current;
     const image = imageRef.current;
     if (canvas && image) {
+      // Account for padding (10px on each side)
       canvas.width = image.clientWidth;
       canvas.height = image.clientHeight;
     }
@@ -178,25 +179,26 @@ const ImageResult: React.FC<ImageResultProps> = ({
     <div className="image-editor result-container">
       <h2>Resultado</h2>
 
-      <div className="image-display-area" style={{ position: 'relative', maxWidth: '100%' }}>
-        {croppedImage && (
-          <img
-            ref={imageRef}
-            src={croppedImage}
-            alt="Resultado final recortado"
-            style={{ display: 'block', maxWidth: '100%', maxHeight: '500px' }}
-            onLoad={handleImageLoad}
+      <div className="image-display-area">
+        <div className="image-container">
+          {croppedImage && (
+            <img
+              ref={imageRef}
+              src={croppedImage}
+              alt="Resultado final recortado"
+              onLoad={handleImageLoad}
+            />
+          )}
+          <canvas
+            ref={canvasRef}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              pointerEvents: 'none',
+            }}
           />
-        )}
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-          }}
-        />
+        </div>
       </div>
 
       {isLoading && <div className="loading-indicator">Procesando...</div>}
