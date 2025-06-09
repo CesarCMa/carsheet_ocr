@@ -229,14 +229,14 @@ function App() {
       <nav className="navbar">
         <div className="navbar-brand">FichaScan</div>
         <div className="navbar-credit">
-          Developed by <a href="https://github.com/CesarCMa" target="_blank" rel="noopener noreferrer">CesarCMa</a>
+          Desarrollado por <a href="https://github.com/CesarCMa" target="_blank" rel="noopener noreferrer">CesarCMa</a>
         </div>
       </nav>
 
       {stage === 'uploading' ? (
         <div className="main-grid">
           <div className="main-left">
-            <h2 className="main-header">Convierte tus fichas técncas a excel!</h2>
+            <h2 className="main-header">¡Convierte tus fichas técnicas a excel!</h2>
             <p className="main-subtitle">FichaScan te permite escanear fichas técnicas de vehículos y convertirlas a excel 🪄</p>
             <div className="main-upload-btn-container">
               <label htmlFor="image-upload" className="upload-button">
@@ -251,11 +251,11 @@ function App() {
               />
             </div>
             <div className="main-warning">
-              Actualmente sólo soportamos fichas técnicas electrónicas (posteriores a 2016)
+              Actualmente solo soportamos fichas técnicas electrónicas (posteriores a 2016)
             </div>
           </div>
           <div className="main-right">
-            <img src="/main_page_pic.png" alt="Ejemplo ficha técnica a excel" className="main-page-image" />
+            <img src="/main_page_pic.png" alt="Ejemplo de conversión de ficha técnica a excel" className="main-page-image" />
           </div>
         </div>
       ) : (

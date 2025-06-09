@@ -17,13 +17,13 @@ const ImageRotator: React.FC<ImageRotatorProps> = ({
 }) => {
   return (
     <div className="image-editor">
-      <h2>Step 1: Rotate Image</h2>
+      <h2>Paso 1: Rotar Imagen</h2>
       <div className="image-preview">
         <div className="image-preview-container"> {/* Container for overlay */}
           <img
             ref={imageRef}
             src={image}
-            alt="Uploaded preview for rotation"
+            alt="Vista previa para rotación"
             style={{ transform: `rotate(${rotation}deg)` }}
           />
           <div className="cross-overlay"></div> {/* The cross overlay */}
@@ -31,7 +31,7 @@ const ImageRotator: React.FC<ImageRotatorProps> = ({
       </div>
       <div className="image-controls">
         <div className="rotation-control">
-          <label htmlFor="rotation-slider">Rotation: {rotation}°</label>
+          <label htmlFor="rotation-slider">Rotación: {rotation}°</label>
           <input
             id="rotation-slider"
             type="range" min="0" max="360" value={rotation}
@@ -40,7 +40,7 @@ const ImageRotator: React.FC<ImageRotatorProps> = ({
           />
         </div>
         <button onClick={onAcceptRotation} className="crop-button">
-          Accept Rotation & Proceed to Crop
+          Aceptar Rotación y Proceder a Recortar
         </button>
       </div>
     </div>

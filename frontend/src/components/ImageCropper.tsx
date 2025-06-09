@@ -19,7 +19,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 }) => {
   return (
     <div className="image-editor">
-      <h2>Step 2: Crop Image</h2>
+      <h2>Paso 2: Recortar Imagen</h2>
       <div className="image-preview">
         <ReactCrop
           crop={crop}
@@ -30,14 +30,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           <img
             ref={rotatedImageRef} // Ref for the rotated image being cropped
             src={rotatedImageDataUrl}
-            alt="Rotated image for cropping"
+            alt="Imagen rotada para recortar"
             // No inline rotation style needed here
           />
         </ReactCrop>
       </div>
       <div className="image-controls">
         <button onClick={onCropImage} className="crop-button">
-          Crop Image
+          Recortar Imagen
         </button>
       </div>
     </div>

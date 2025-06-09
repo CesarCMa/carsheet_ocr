@@ -165,10 +165,10 @@ const ImageResult: React.FC<ImageResultProps> = ({
     return (
       <div className="image-editor result-container error-container">
         <h2>Error</h2>
-        <p>Could not process image:</p>
+        <p>No se pudo procesar la imagen:</p>
         <pre>{JSON.stringify(detectionResult.error, null, 2)}</pre>
         <button onClick={onEditAgain} className="action-button">
-          Try Again
+          Intentar de Nuevo
         </button>
       </div>
     );
@@ -176,14 +176,14 @@ const ImageResult: React.FC<ImageResultProps> = ({
 
   return (
     <div className="image-editor result-container">
-      <h2>Result</h2>
+      <h2>Resultado</h2>
 
       <div className="image-display-area" style={{ position: 'relative', maxWidth: '100%' }}>
         {croppedImage && (
           <img
             ref={imageRef}
             src={croppedImage}
-            alt="Final cropped result"
+            alt="Resultado final recortado"
             style={{ display: 'block', maxWidth: '100%', maxHeight: '500px' }}
             onLoad={handleImageLoad}
           />
@@ -199,25 +199,25 @@ const ImageResult: React.FC<ImageResultProps> = ({
         />
       </div>
 
-      {isLoading && <div className="loading-indicator">Processing...</div>}
+      {isLoading && <div className="loading-indicator">Procesando...</div>}
 
       {!isLoading && detectionResult && !('error' in detectionResult) && detectionResult.code_descriptions && (
         <div className="detection-results-table">
           <div className="table-header">
-            <h3>Detected Codes and Descriptions</h3>
+            <h3>Códigos y Descripciones Detectados</h3>
             <button
               onClick={handleDownloadExcel}
               className="download-button action-button"
             >
-              Download Excel
+              Descargar Excel
             </button>
           </div>
           <table>
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Code Name</th>
-                <th>Description</th>
+                <th>Código</th>
+                <th>Nombre del Código</th>
+                <th>Descripción</th>
               </tr>
             </thead>
             <tbody>
@@ -243,7 +243,7 @@ const ImageResult: React.FC<ImageResultProps> = ({
       )}
 
       {!isLoading && (!detectionResult || !('code_descriptions' in detectionResult)) && Object.keys(editableDescriptions).length === 0 && (
-        <p>No detection results available.</p>
+        <p>No hay resultados de detección disponibles.</p>
       )}
 
       {!isLoading && (
@@ -251,7 +251,7 @@ const ImageResult: React.FC<ImageResultProps> = ({
           onClick={onEditAgain}
           className="edit-again-button action-button"
         >
-          Start Over / Edit Again
+          Comenzar de Nuevo / Editar de Nuevo
         </button>
       )}
     </div>
