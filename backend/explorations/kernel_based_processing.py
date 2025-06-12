@@ -137,7 +137,7 @@ def visualize_lines(image, horiz_lines, vert_lines):
     horiz_color[horiz_lines > 0] = [0, 0, 255]  
     vert_color[vert_lines > 0] = [255, 0, 0]    
 
-    alpha = 0.5 
+    alpha = 0.5
     vis = cv2.addWeighted(vis, 1, horiz_color, alpha, 0)
     vis = cv2.addWeighted(vis, 1, vert_color, alpha, 0)
     
@@ -145,7 +145,7 @@ def visualize_lines(image, horiz_lines, vert_lines):
 
 # %%
 # Configuration parameters
-image_path = "explorations/image_10.jpg"  # Path to the input image
+image_path = "explorations/small_rotation_1.jpg"  # Path to the input image
 kw = 0.15  # Horizontal kernel width ratio
 kh = 0.1   # Vertical kernel height ratio 
 min_w = 15 # Minimum cell width in pixels
