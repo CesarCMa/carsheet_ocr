@@ -69,12 +69,14 @@ make clean
 
 ```
 backend/
+├── explorations/      # Scripts with initial explorations on carsheet processing
+├── model_train/       # All code to fine-tune the recognition model
+├── models/            # Directory where model checkpoints are saved when running the app
 ├── src/
 │   └── app/
 │       ├── api/        # API endpoints
 │       ├── core/       # Core functionality, config
-│       ├── models/     # Data models
-│       ├── services/   # Business logic
+│       ├── services/   # Directory for the exposed services on the API
 │       └── main.py     # Application entry point
 ├── tests/             # Test files
 ├── pyproject.toml     # Poetry dependency file
