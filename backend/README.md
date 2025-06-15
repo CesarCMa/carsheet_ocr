@@ -18,7 +18,11 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 2. Install dependencies:
 ```bash
-poetry install
+# For production dependencies
+make deps-prod
+
+# For development dependencies (includes dev tools)
+make deps-dev
 ```
 
 3. Activate the virtual environment:
@@ -31,8 +35,7 @@ poetry shell
 To run the development server:
 
 ```bash
-cd src
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+make start
 ```
 
 The API will be available at `http://localhost:8000`
@@ -40,6 +43,27 @@ The API will be available at `http://localhost:8000`
 API Documentation will be available at:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+## Development Commands
+
+The following commands are available for development:
+
+```bash
+# Run tests
+make test
+
+# Run linter
+make lint
+
+# Format code
+make format
+
+# Fix linting issues and format code
+make lint-fix
+
+# Clean up cache files
+make clean
+```
 
 ## Project Structure
 
