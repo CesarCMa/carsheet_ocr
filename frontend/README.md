@@ -1,6 +1,8 @@
 # Car Sheet OCR Application
 
-![Application Home Page](./public/app_home_page.png)
+<div style="align: center; text-align:center;">
+  <img src="https://github.com/CesarCMa/carsheet_ocr/blob/main/frontend/app_home_page.png"/>
+</div>
 
 
 A modern web application built with React, TypeScript, and Vite that helps users process and extract information from car-related documents using OCR technology.
